@@ -40,12 +40,14 @@
                         :param [name (params name)]})]))
 
 
-(defn validate [params model allowed messages]
+(defn validate
+  "Validates a supplied map of parameters against a model. If errors are found, they are placed in the errors in returned map. Only parameter names in the allowed list will be parsed, validated and placed into the values map."
+  [params model allowed messages]
   (let [results (check-all allowed model messages params)] 
     {:errors (reduce (fn [errors [name [_ error]]] 
                        (if error (assoc errors name error) errors))
                      {} results)
+     :params params
      :values (reduce (fn [values [name [val _]]] (assoc values name val))
-                     {} results)
-     :params params}))
+                     {} results)}))
 
