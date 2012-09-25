@@ -1,5 +1,5 @@
 (defproject pure "0.0.1"
-  :description "A validation and parameter parsing toolkit."
+  :description "A validation and parameter parsing framework"
   
   :url "http://github.com/mikeball/pure"
 
