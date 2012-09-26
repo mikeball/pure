@@ -21,16 +21,16 @@ Add the following dependency to your `project.clj` file:
 
 
 The main validation function is `pure.core/validate` which has the following syntax:
-
+```clojure
     (validate map-of-params 
               map-of-model 
               list-of-allowed-fields 
               map-of-messages)
-
+```
 
 
 ###Example:
-
+```clojure
     (require '[pure.core :as pure])
 
 	;; invalid id parameter
@@ -52,7 +52,7 @@ The main validation function is `pure.core/validate` which has the following syn
           		   {:int/required ":name is required!"})
 
 	=> {:errors {}, :params {:unwanted "abc" :id "3"} :values {:id 3}}
-
+```
 
 Note the following about the above example:
 
