@@ -13,8 +13,9 @@ Pure is currently very incomplete with few rules implemented but is under active
 
 Add the following dependency to your `project.clj` file:
 
-    [pure "0.0.1"]
-
+```clojure
+[pure "0.0.1"]
+```
 
 
 ## Usage
@@ -22,36 +23,37 @@ Add the following dependency to your `project.clj` file:
 
 The main validation function is `pure.core/validate` which has the following syntax:
 ```clojure
-    (validate map-of-params 
-              map-of-model 
-              list-of-allowed-fields 
-              map-of-messages)
+(validate map-of-params 
+		  map-of-model 
+          list-of-allowed-fields 
+          map-of-messages)
 ```
 
 
 ###Example:
 ```clojure
-    (require '[pure.core :as pure])
+(require '[pure.core :as pure])
 
-	;; invalid id parameter
-	(pure/validate {:id "3x" :unwanted "abc"}
-          		   {:id {:type :int :required true}}
-          		   [:id]
-          		   {:int/required ":name is required!"})
+;; invalid id parameter
+(pure/validate {:id "3x" :unwanted "abc"}
+          	   {:id {:type :int :required true}}
+          	   [:id]
+          	   {:int/required ":name is required!"})
 	
-	=> {:errors {:id "id is required!"}
-	    :params {:unwanted "abc", :id "3x"}
-	    :values {:id nil}}
+=> {:errors {:id "id is required!"}
+    :params {:unwanted "abc", :id "3x"}
+	:values {:id nil}}
 
 
 
-	;; valid id parameter
-	(pure/validate {:id "3"}
-          		   {:id {:type :int :required true}}
-          		   [:id]
-          		   {:int/required ":name is required!"})
+;; valid id parameter
+(pure/validate {:id "3"}
+          	   {:id {:type :int :required true}}
+          	   [:id]
+          	   {:int/required ":name is required!"})
 
-	=> {:errors {}, :params {:unwanted "abc" :id "3"} :values {:id 3}}
+=> {:errors {}, :params {:unwanted "abc" :id "3"} :values {:id 3}}
+
 ```
 
 Note the following about the above example:
