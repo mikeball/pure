@@ -49,13 +49,8 @@
 
 (deftest validate-values-are-parsed
   (are [params model allowed expected] (= (:values (validate params model allowed messages)) expected)
-
        {:a "good"} {:a {:type :string :required true}} [:a] {:a "good"}
-
-       {:a "1"} {:a {:type :int :required true}} [:a] {:a 1}
-
-))
-
+       {:a "1"} {:a {:type :int :required true}} [:a] {:a 1}))
 
 
 
