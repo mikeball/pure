@@ -3,10 +3,11 @@
 
 
 (deftest get-messages-returns-correct-message
-  (are [type rule-name param-name messages expected] (= (get-message type rule-name param-name messages) expected) 
-       :s :r :n {:s/r "sr"} "sr"
-       :s :r :n {:s/r ":name sr"} "n sr"
-       :s :r :f-n {:s/r ":name sr"} "f n sr"))
+  (are [type rule-name param-name messages raw expected] (= (get-message type rule-name param-name messages raw) expected) 
+       :s :r :n {:s/r "sr"} "" "sr"
+       :s :r :n {:s/r ":name sr"} "" "n sr"
+       :s :r :f-n {:s/r ":name sr"} "" "f n sr"
+       :s :r :n {:s/r ":raw sr"} "x" "x sr"))
 
 
 (deftest string-required-checks
