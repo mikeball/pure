@@ -6,8 +6,8 @@
         msg (messages kw)]
     (if (str/blank? msg) 
       (throw (Exception. (str "message " type "/" (name rule-name) " not found!")))
-      (str/replace msg #":name" (name param-name)))))
-
+      (let [nice-name (str/replace (name param-name) #"-" " ")]
+        (str/replace msg #":name" nice-name)))))
 
 (defmulti check 
   "Returns error message string if a valid, nil if no errors."

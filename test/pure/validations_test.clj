@@ -5,7 +5,8 @@
 (deftest get-messages-returns-correct-message
   (are [type rule-name param-name messages expected] (= (get-message type rule-name param-name messages) expected) 
        :s :r :n {:s/r "sr"} "sr"
-       :s :r :n {:s/r ":name sr"} "n sr"))
+       :s :r :n {:s/r ":name sr"} "n sr"
+       :s :r :f-n {:s/r ":name sr"} "f n sr"))
 
 
 (deftest string-required-checks
