@@ -76,3 +76,25 @@
        true nil "ir*"
        true 1 nil
        true -1 nil))
+
+
+(deftest int-range-checks
+  (are [min max val expected] (= (check {:type :int 
+                                         :rule [:range [min max]]
+                                         :param [:a val]
+                                         :messages {:int/range-under ":min or more" 
+                                                    :int/range-over ":max or less"
+                                                    :int/range "between :min :max"}}) expected)
+       nil nil nil nil
+       nil nil 1 nil
+       2 nil nil "2 or more"
+       2 nil 1 "2 or more"
+       2 nil 2 nil
+       nil 5 nil "5 or less"
+       nil 5 6 "5 or less"
+       nil 5 5 nil
+       2 5 nil "between 2 5"
+       2 5 1 "between 2 5"
+       2 5 2 nil
+       2 5 5 nil
+       2 5 6 "between 2 5"))

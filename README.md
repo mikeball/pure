@@ -72,8 +72,8 @@ Note the following about the above example:
 	 :required true ;; param must not be nil or blank
 	 :required false ;; param may be nil or any value
 	 
-	 :length [2 nil] ;; must be at least 2 characters long
-	 :length [nil 5] ;; must be less than 5 characters long
+	 :length [2 nil] ;; must be 2 or more characters long
+	 :length [nil 5] ;; must be 5 or less characters long
 	 :length [2 5] ;; must be between 2 and 5 characters long  
 	}
 
@@ -83,6 +83,10 @@ Note the following about the above example:
 	 
 	 :required true ;; param must parsable into integer
 	 :required false ;; param may be nil or any value
+	 
+	 :range [2 nil] ;; must be 2 or greater
+	 :range [nil 5] ;; must be 5 or less 
+	 :range [2 5] ;; must be between 2 and 5
 	}
 
 
@@ -91,11 +95,13 @@ Note the following about the above example:
 ###Messages:
 
 	{:string/required ":name is required"
-     :string/length-short ":name must be at least :min characters long"
-     :string/length-long ":name must be less than :max characters long"
+     :string/length-short ":min or more characters long"
+     :string/length-long ":max or less characters long"
      
-     :int/required "please enter a valid number"
-     :int/range ":name must be a number between :min and :max"
+     :int/required ":name is required"
+     :int/range-under ":min or more"
+     :int/range-over ":max or less"
+     :int/range "between :min :max"
      }
 
 

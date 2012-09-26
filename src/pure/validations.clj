@@ -40,8 +40,23 @@
    (let [custom-fn (-> v :rule second)]
      (custom-fn (-> v :param second))))
 
+
 (defmethod check [:int :required] [{:keys [type rule param messages]}]
   (cond (false? (second rule)) nil
         (true? (second rule)) (if (not (integer? (second param))) 
                                 (get-message type (first rule) (first param) messages))
         :default (throw (Exception. "invalid int/required setting, only true or false is allowed."))))
+
+
+(defmethod check [:int :range] [{:keys [type rule param messages]}]
+  (let [setting (second rule) min (first setting) max (second setting) val (second param)
+        under (and (not (nil? min)) (or (nil? val) (< val min)))
+        over (and (not (nil? max)) (or (nil? val) (> val max)))
+        message-key (cond (and (not (nil? min)) (not (nil? max)) (or (nil? val) under over)) :int/range
+                          (and under (contains? messages :int/range-under)) :range-under
+                          (and over (contains? messages :int/range-over)) :range-over)]
+    (if (or under over)
+      (-> (get-message type message-key (first param) messages)
+          (str/replace #":min" (str min))
+          (str/replace #":max" (str max)))
+      nil)))
