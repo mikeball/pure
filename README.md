@@ -67,45 +67,57 @@ Note the following about the above example:
 
 
 ###Validation Rules:
+```clojure
 
-    ;; string rules
-	{:type :string ;; type must be supplied
-	 
-	 :required true ;; param must not be nil or blank
-	 :required false ;; param may be nil or any value
-	 
-	 :length [2 nil] ;; must be 2 or more characters long
-	 :length [nil 5] ;; must be 5 or less characters long
-	 :length [2 5] ;; must be between 2 and 5 characters long  
-	}
+;; string rules
+{:type :string ;; type must be supplied
+ 
+ :required true ;; param must not be nil or blank
+ :required false ;; param may be nil or any value
+ 
+ :length [2 nil] ;; must be 2 or more characters long
+ :length [nil 5] ;; must be 5 or less characters long
+ :length [2 5] ;; must be between 2 and 5 characters long  
+}
 
 
-	;; int rules
-	{:type :int ;; type must be supplied
-	 
-	 :required true ;; param must parsable into integer
-	 :required false ;; param may be nil or any value
-	 
-	 :range [2 nil] ;; must be 2 or greater
-	 :range [nil 5] ;; must be 5 or less 
-	 :range [2 5] ;; must be between 2 and 5
-	}
+;; int rules
+{:type :int ;; type must be supplied
+ 
+ :required true ;; param must parsable into integer
+ :required false ;; param may be nil or any value
+ 
+ :range [2 nil] ;; must be 2 or greater
+ :range [nil 5] ;; must be 5 or less 
+ :range [2 5] ;; must be between 2 and 5
+}
 
+
+;; email rules
+{:type :email ;; type must be supplied
+ 
+ :required true ;; param must not be nil or blank, and valid format
+ :required false ;; param may be nil/blank or if supplied a valid format 
+}
+
+```
 
 
 
 ###Messages:
-
-	{:string/required ":name is required"
-     :string/length-short ":min or more characters long"
-     :string/length-long ":max or less characters long"
-     
-     :int/required ":name is required"
-     :int/range-under ":min or more"
-     :int/range-over ":max or less"
-     :int/range "between :min :max"
-     }
-
+```clojure
+{:string/required ":name is required"
+ :string/length-short ":min or more characters long"
+ :string/length-long ":max or less characters long"
+ 
+ :int/required ":name is required"
+ :int/range-under ":min or more"
+ :int/range-over ":max or less"
+ :int/range "between :min :max"
+ 
+ :email/required ":name is required"
+ :email/invalid ":name must be valid email"}
+```
 
 
 ## License

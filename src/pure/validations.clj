@@ -18,7 +18,7 @@
   (cond (false? (second rule)) nil
         (true? (second rule)) (if (str/blank? (second param)) 
                                 (get-message type (first rule) (first param) messages))
-        :default (throw (Exception. "invalid string/required setting, only true or false is allowed."))))
+        :default (throw (Exception. "invalid string/required setting, only true or false are allowed."))))
 
 (defmethod check [:string :length] [{:keys [type rule param messages]}]
   (let [len (count (second param)) 
@@ -60,3 +60,18 @@
           (str/replace #":min" (str min))
           (str/replace #":max" (str max)))
       nil)))
+
+
+(defmethod check [:email :required] [{:keys [type rule param messages]}]
+  (let [rule-name (first rule) setting (second rule)
+        param-name (first param) val (second param)
+        not-email-fmt? #(not (re-matches #".+@.+\..+" %))
+        required-message (get-message type rule-name  param-name messages)
+        invalid-message (get-message type :invalid param-name messages)]
+
+    (cond (false? setting) (cond (str/blank? val) nil
+                                 (not-email-fmt? val) invalid-message)
+          (true? setting) (cond (str/blank? val) required-message
+                                (not-email-fmt? val) invalid-message)
+          :default (throw (Exception. "invalid email/required setting, only true or false are allowed.")))))
+

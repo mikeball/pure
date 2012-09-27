@@ -15,3 +15,7 @@
         (string? raw) (if-let [match (re-matches #"\d+" raw)] 
                         (read-string match))
         :default nil))
+
+
+(defmethod parse :email [_ raw]
+  (if raw (str/trim raw)))

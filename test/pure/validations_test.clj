@@ -98,3 +98,22 @@
        2 5 2 nil
        2 5 5 nil
        2 5 6 "between 2 5"))
+
+
+
+
+(deftest email-required-checks
+  (are [setting val expected] (= (check {:type :email 
+                                         :rule [:required setting]
+                                         :param [:a val]
+                                         :messages {:email/required "required"
+                                                    :email/invalid "invalid"}}) expected)
+       false nil nil
+       false "" nil      
+       false "a" "invalid"
+       true nil "required"
+       true "" "required"
+       true "a" "invalid"
+       true "a@a.com" nil
+
+))
