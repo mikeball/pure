@@ -52,7 +52,7 @@ The main validation function is `pure.core/validate` which has the following syn
           	   [:id]
           	   {:int/required ":name is required!"})
 
-=> {:errors {}, :params {:unwanted "abc" :id "3"} :values {:id 3}}
+=> {:errors {} :params {:unwanted "abc" :id "3"} :values {:id 3}}
 
 ```
 
@@ -62,43 +62,33 @@ Note the following about the above example:
  - The original values in the supplied params are added to result because the often are needed for redisplay on validation failure.
  - The error message is formatted with the name of the parameter.
  - Only allowed parameters are passed on as values.
- - Most importantly ** the integer has been automatically parsed for you** and placed in the values map.
+ - Most importantly _the integer has been automatically parsed for you_ and placed in the values map.
 
 
 
 ###Validation Rules:
 ```clojure
 
-;; string rules
-{:type :string ;; type must be supplied
- 
- :required true ;; param must not be nil or blank
+{:type :string
+ :required true  ;; param must not be nil or blank
  :required false ;; param may be nil or any value
- 
  :length [2 nil] ;; must be 2 or more characters long
  :length [nil 5] ;; must be 5 or less characters long
- :length [2 5] ;; must be between 2 and 5 characters long  
-}
+ :length [2 5] } ;; must be between 2 and 5 characters long  
 
 
-;; int rules
-{:type :int ;; type must be supplied
- 
- :required true ;; param must parsable into integer
+{:type :int
+ :required true  ;; param must parsable into integer
  :required false ;; param may be nil or any value
- 
- :range [2 nil] ;; must be 2 or greater
- :range [nil 5] ;; must be 5 or less 
- :range [2 5] ;; must be between 2 and 5
-}
+ :range [2 nil]  ;; must be 2 or greater
+ :range [nil 5]  ;; must be 5 or less 
+ :range [2 5] }  ;; must be between 2 and 5
 
 
 ;; email rules
-{:type :email ;; type must be supplied
- 
+{:type :email 
  :required true ;; param must not be nil or blank, and valid format
- :required false ;; param may be nil/blank or if supplied a valid format 
-}
+ :required false };; param may be nil/blank or if supplied a valid format 
 
 ```
 
