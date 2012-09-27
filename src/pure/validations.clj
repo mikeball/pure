@@ -52,7 +52,7 @@
   (let [setting (second rule) min (first setting) max (second setting) val (second param)
         under (and (not (nil? min)) (or (nil? val) (< val min)))
         over (and (not (nil? max)) (or (nil? val) (> val max)))
-        message-key (cond (and (not (nil? min)) (not (nil? max)) (or (nil? val) under over)) :int/range
+        message-key (cond (and (not (nil? min)) (not (nil? max)) (or (nil? val) under over)) :range
                           (and under (contains? messages :int/range-under)) :range-under
                           (and over (contains? messages :int/range-over)) :range-over)]
     (if (or under over)
