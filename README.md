@@ -23,10 +23,7 @@ Add the following dependency to your `project.clj` file:
 
 The main validation function is `pure.core/validate` which has the following syntax:
 ```clojure
-(validate map-of-params 
-		  map-of-model 
-          list-of-allowed-fields 
-          map-of-messages)
+(validate map-of-params map-of-model list-of-allowed-fields map-of-messages)
 ```
 
 
@@ -40,10 +37,7 @@ The main validation function is `pure.core/validate` which has the following syn
           	   [:id]
           	   {:int/required ":name is required!"})
 	
-=> {:errors {:id "id is required!"}
-    :params {:unwanted "abc", :id "3x"}
-	:values {:id nil}}
-
+=> {:errors {:id "id is required!"} :params {:unwanted "abc", :id "3x"} :values {:id nil}}
 
 
 ;; valid id parameter
@@ -76,7 +70,6 @@ Note the following about the above example:
  :length [nil 5] ;; must be 5 or less characters long
  :length [2 5] } ;; must be between 2 and 5 characters long  
 
-
 {:type :int
  :required true  ;; param must parsable into integer
  :required false ;; param may be nil or any value
@@ -84,8 +77,6 @@ Note the following about the above example:
  :range [nil 5]  ;; must be 5 or less 
  :range [2 5] }  ;; must be between 2 and 5
 
-
-;; email rules
 {:type :email 
  :required true ;; param must not be nil or blank, and valid format
  :required false };; param may be nil/blank or if supplied a valid format 
