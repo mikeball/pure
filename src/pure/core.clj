@@ -4,10 +4,6 @@
             [pure.parsing :as parsing]))
 
 
-(defn errors? [validation]
-  (if (nil? (keys (validation :errors))) false true))
-
-
 (defn- get-ordered-rules [type]
   (cond (= type :string) [:required :length :custom]
         (= type :int) [:required :range]
@@ -43,11 +39,10 @@
 (defn validate
   "Validates a supplied map of parameters against a model. If errors are found, they are placed in the errors in returned map. Only parameter names in the allowed list will be parsed, validated and placed into the values map."
   [params model allowed messages]
-  (let [results (check-all allowed model messages params)] 
-    {:errors (reduce (fn [errors [name [_ error]]] 
-                       (if error (assoc errors name error) errors))
-                     {} results)
+  (let [results (check-all allowed model messages params)
+        errors (reduce (fn [errors [name [_ error]]] 
+                         (if error (assoc errors name error) errors)) {} results)
+        values (reduce (fn [values [name [val _]]] (assoc values name val)) {} results)]
+    {:errors (if-not (empty? errors) errors)
      :params params
-     :values (reduce (fn [values [name [val _]]] (assoc values name val))
-                     {} results)}))
-
+     :values values}))

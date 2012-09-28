@@ -2,12 +2,6 @@
   (:use clojure.test pure.core))
 
 
-(deftest errors?-finds-errors
-  (are [validation expected] (= (errors? validation) expected)
-       {:errors {}} false
-       {:errors {:a "yep"}} true))
-
-
 (deftest check-rules-order
   (are [param expected] 
        (= (check-rules {:type :string
@@ -38,11 +32,11 @@
                :int/required "int required" 
                :int/range "range" } )
 
-(deftest validate-strings
+(deftest validate-errors-are-returned
   (are [params model allowed expected] (= (:errors (validate params model allowed messages)) expected)
        {:a ""} {:a {:type :string :required true}} [:a] {:a "string required"}
        {:a "a"} {:a {:type :string :length [2 5]}} [:a] {:a "string short"}
-       {:a "good"} {:a {:type :string :required true :length [2 5]}} [:a] {}
+       {:a "good"} {:a {:type :string :required true :length [2 5]}} [:a] nil
        {:a "a"} {:a {:type :string :custom #(if (= % "a") "nope")}} [:a] {:a "nope"}
        {:a ""} {:a {:type :int :required true}} [:a] {:a "int required"}))
 
