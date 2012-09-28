@@ -9,6 +9,10 @@
       (let [nice-name (str/replace (name param-name) #"-" " ")]
         (str/replace msg #":name" nice-name)))))
 
+(defn run-custom-check [v]
+  (let [custom-fn (-> v :rule second)]
+     (custom-fn (-> v :param second))))
+
 
 (defmulti check 
   "Returns error message string if a valid, nil if no errors."
@@ -36,9 +40,8 @@
           (str/replace #":max" (str max)))
       nil)))
 
-(defmethod check [:string :custom] [v]
-   (let [custom-fn (-> v :rule second)]
-     (custom-fn (-> v :param second))))
+
+(defmethod check [:string :custom] [v] (run-custom-check v))
 
 
 (defmethod check [:int :required] [{:keys [type rule param messages]}]
@@ -46,7 +49,6 @@
         (true? (second rule)) (if (not (integer? (second param))) 
                                 (get-message type (first rule) (first param) messages))
         :default (throw (Exception. "invalid int/required setting, only true or false is allowed."))))
-
 
 (defmethod check [:int :range] [{:keys [type rule param messages]}]
   (let [setting (second rule) min (first setting) max (second setting) val (second param)
@@ -75,3 +77,5 @@
                                 (not-email-fmt? val) invalid-message)
           :default (throw (Exception. "invalid email/required setting, only true or false are allowed.")))))
 
+
+(defmethod check [:email :custom] [v] (run-custom-check v))

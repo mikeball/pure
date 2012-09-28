@@ -58,8 +58,8 @@
 
 (deftest string-custom-checks
   (are [val expected] (= (check {:type :string
-                                      :rule [:custom #(if (= % "a") "error msg")]
-                                      :param [:a val]}) expected)
+                                 :rule [:custom #(if (= % "a") "error msg")]
+                                 :param [:a val]}) expected)
        nil nil
        "a" "error msg"
        "b" nil))
@@ -114,6 +114,13 @@
        true nil "required"
        true "" "required"
        true "a" "invalid"
-       true "a@a.com" nil
+       true "a@a.com" nil))
 
-))
+
+(deftest email-custom-checks
+  (are [val expected] (= (check {:type :email
+                                 :rule [:custom #(if (= % "a") "error msg")]
+                                 :param [:a val]}) expected)
+       nil nil
+       "a" "error msg"
+       "b" nil))
