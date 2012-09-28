@@ -3,6 +3,7 @@
             [pure.validations :as validations]
             [pure.parsing :as parsing]))
 
+(defn parse [type raw] (parsing/parse type raw))
 
 (defn- get-ordered-rules [type]
   (cond (= type :string) [:required :length :custom]
