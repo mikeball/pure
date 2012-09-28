@@ -7,6 +7,7 @@
 (defn- get-ordered-rules [type]
   (cond (= type :string) [:required :length :custom]
         (= type :int) [:required :range]
+        (= type :email) [:required :custom]
         :default []))
 
 

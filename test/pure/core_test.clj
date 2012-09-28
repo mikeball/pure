@@ -30,7 +30,9 @@
                :string/length-short "string short"
                :string/length-long "long"
                :int/required "int required" 
-               :int/range "range" } )
+               :int/range "range"
+               :email/required "email required"
+               :email/invalid "email invalid"})
 
 (deftest validate-errors-are-returned
   (are [params model allowed expected] (= (:errors (validate params model allowed messages)) expected)
@@ -38,7 +40,9 @@
        {:a "a"} {:a {:type :string :length [2 5]}} [:a] {:a "string short"}
        {:a "good"} {:a {:type :string :required true :length [2 5]}} [:a] nil
        {:a "a"} {:a {:type :string :custom #(if (= % "a") "nope")}} [:a] {:a "nope"}
-       {:a ""} {:a {:type :int :required true}} [:a] {:a "int required"}))
+       {:a ""} {:a {:type :int :required true}} [:a] {:a "int required"}
+       {:a ""} {:a {:type :email :required true}} [:a] {:a "email required"}
+       {:a "abc"} {:a {:type :email :required false}} [:a] {:a "email invalid"}))
 
 
 (deftest validate-values-are-parsed
