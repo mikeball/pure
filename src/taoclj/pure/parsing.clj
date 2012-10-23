@@ -1,4 +1,4 @@
-(ns pure.parsing
+(ns taoclj.pure.parsing
     (:require [clojure.string :only [trim] :as str]))
 
 

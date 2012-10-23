@@ -1,5 +1,5 @@
-(ns pure.core-test
-  (:use clojure.test pure.core))
+(ns taoclj.pure-tests
+  (:use clojure.test taoclj.pure))
 
 
 (deftest check-rules-order

@@ -1,10 +1,9 @@
-(ns pure.parsing-test
-  (:use clojure.test pure.parsing))
+(ns taoclj.pure.parsing-tests
+  (:use clojure.test taoclj.pure.parsing))
 
 
 (deftest parse-types
   (are [type raw expected] (= (parse type raw) expected)
-       :unknown "a" "a"
        :string nil nil
        :string "" ""
        :string "a" "a"

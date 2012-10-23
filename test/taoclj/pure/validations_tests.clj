@@ -1,5 +1,5 @@
-(ns pure.validations-test
-  (:use clojure.test pure.validations))
+(ns taoclj.pure.validations-tests
+  (:use clojure.test taoclj.pure.validations))
 
 
 (deftest get-messages-returns-correct-message

@@ -1,7 +1,7 @@
-(ns pure.core
+(ns taoclj.pure
   (:require [clojure.string :only [blank? trim] :as str]
-            [pure.validations :as validations]
-            [pure.parsing :as parsing]))
+            [taoclj.pure.validations :as validations]
+            [taoclj.pure.parsing :as parsing]))
 
 (defn parse [type raw] (parsing/parse type raw))
 

@@ -14,7 +14,7 @@ Pure is currently very incomplete with few rules implemented but is under active
 Add the following dependency to your `project.clj` file:
 
 ```clojure
-[pure "0.0.1"]
+[org.taoclj/pure "0.0.1"]
 ```
 
 
@@ -32,7 +32,7 @@ The main validation function is `pure.core/validate` which has the following syn
 
 ###Example:
 ```clojure
-(require '[pure.core :as pure])
+(require '[taoclj.pure :as pure])
 
 ;; invalid id parameter
 (pure/validate {:id "3x" :unwanted "abc"}

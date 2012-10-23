@@ -1,4 +1,4 @@
-(ns pure.validations
+(ns taoclj.pure.validations
     (:require [clojure.string :only [blank?] :as str]))
 
 (defn get-message [type rule-name param-name messages]
