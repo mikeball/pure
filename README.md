@@ -1,12 +1,11 @@
 # Pure
 
-Pure is a validation library for clojure. 
+Pure is a validation, and parameter parsing library for clojure. 
 
-One of the most tedious parts of building web applications is validating & parsing string based parameters into the values your application needs. Pure uses the type of your model attribute, as well as validation rules to do this automatically.
-
-Pure is currently very incomplete with few rules implemented but is under active development.
+One of the most tedious parts of building applications is validating & parsing string based parameters into the values your application needs such as integers and datetimes. Pure allows you to specify a model with the type of an attribute, as well as validation rules, then have the parsing and validation performed automatically.
 
 
+[![Continuous Integration status](https://secure.travis-ci.org/mikeball/pure.png)](http://travis-ci.org/mikeball/pure)
 
 
 ## Installation
