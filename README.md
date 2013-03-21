@@ -19,36 +19,34 @@ Add the following dependency to your `project.clj` file:
 
 ## Usage
 
-
-The main validation function is `pure.core/validate` which has the following syntax:
+The main validation function is `taoclj.pure/validate` which has the following syntax:
 ```clojure
-(validate map-of-params
-          map-of-model
-          list-of-allowed-fields
-          map-of-messages)
+(taoclj.pure/validate params model messages)
 ```
 
 
-###Example:
+###Examples:
 ```clojure
 (require '[taoclj.pure :as pure])
 
 ;; invalid id parameter
 (pure/validate {:id "3x" :unwanted "abc"}
           	   {:id {:type :int :required true}}
-          	   [:id]
           	   {:int/required ":name is required!"})
 	
-=> {:errors {:id "id is required!"} :params {:unwanted "abc", :id "3x"} :values {:id nil}}
+=> {:errors {:id "id is required!"}
+    :params {:unwanted "abc", :id "3x"}
+    :values {:id nil}}
 
 
 ;; valid id parameter
 (pure/validate {:id "3"}
           	   {:id {:type :int :required true}}
-          	   [:id]
           	   {:int/required ":name is required!"})
 
-=> {:errors {} :params {:unwanted "abc" :id "3"} :values {:id 3}}
+=> {:errors nil 
+    :params {:unwanted "abc" :id "3"} 
+    :values {:id 3}} ;; the id has been parsed into an integer
 
 ```
 
@@ -57,8 +55,7 @@ Note the following about the above example:
  - For valid parameter sets, the errors map will be empty.
  - The original values in the supplied params are added to result because the often are needed for redisplay on validation failure.
  - The error message is formatted with the name of the parameter.
- - Only allowed parameters are passed on as values.
- - Most importantly _the integer has been automatically parsed for you_ and placed in the values map.
+ - Most importantly _the integer has been automatically parsed for you._
 
 
 
