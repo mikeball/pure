@@ -48,3 +48,11 @@
     {:errors (if-not (empty? errors) errors)
      :params params
      :values values}))
+
+(validate {:id "3x" :unwanted "abc"}
+          	   {:id {:type :int :required true}}
+          	   {:int/required ":name is required!"})
+
+(validate {:id "3"}
+          	   {:id {:type :int :required true}}
+          	   {:int/required ":name is required!"})
