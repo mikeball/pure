@@ -30,8 +30,8 @@
     [val (check-for-error type rules messages [(first param) val])]))
 
 
-(defn check-all [allowed model messages params]
-  (for [name allowed]
+(defn check-all [model messages params]
+  (for [name (keys model)]
     [name (check-rules {:type (-> model name :type)
                         :rules (-> model name)
                         :messages messages
@@ -40,8 +40,8 @@
 
 (defn validate
   "Validates a supplied map of parameters against a model. If errors are found, they are placed in the errors in returned map. Only parameter names in the allowed list will be parsed, validated and placed into the values map."
-  [params model allowed messages]
-  (let [results (check-all allowed model messages params)
+  [params model messages]
+  (let [results (check-all model messages params)
         errors (reduce (fn [errors [name [_ error]]] 
                          (if error (assoc errors name error) errors)) {} results)
         values (reduce (fn [values [name [val _]]] (assoc values name val)) {} results)]

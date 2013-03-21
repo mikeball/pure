@@ -35,20 +35,20 @@
                :email/invalid "email invalid"})
 
 (deftest validate-errors-are-returned
-  (are [params model allowed expected] (= (:errors (validate params model allowed messages)) expected)
-       {:a ""} {:a {:type :string :required true}} [:a] {:a "string required"}
-       {:a "a"} {:a {:type :string :length [2 5]}} [:a] {:a "string short"}
-       {:a "good"} {:a {:type :string :required true :length [2 5]}} [:a] nil
-       {:a "a"} {:a {:type :string :custom #(if (= % "a") "nope")}} [:a] {:a "nope"}
-       {:a ""} {:a {:type :int :required true}} [:a] {:a "int required"}
-       {:a ""} {:a {:type :email :required true}} [:a] {:a "email required"}
-       {:a "abc"} {:a {:type :email :required false}} [:a] {:a "email invalid"}))
+  (are [params model expected] (= (:errors (validate params model messages)) expected)
+       {:a ""} {:a {:type :string :required true}} {:a "string required"}
+       {:a "a"} {:a {:type :string :length [2 5]}} {:a "string short"}
+       {:a "good"} {:a {:type :string :required true :length [2 5]}} nil
+       {:a "a"} {:a {:type :string :custom #(if (= % "a") "nope")}} {:a "nope"}
+       {:a ""} {:a {:type :int :required true}} {:a "int required"}
+       {:a ""} {:a {:type :email :required true}} {:a "email required"}
+       {:a "abc"} {:a {:type :email :required false}} {:a "email invalid"}))
 
 
 (deftest validate-values-are-parsed
-  (are [params model allowed expected] (= (:values (validate params model allowed messages)) expected)
-       {:a "good"} {:a {:type :string :required true}} [:a] {:a "good"}
-       {:a "1"} {:a {:type :int :required true}} [:a] {:a 1}))
+  (are [params model expected] (= (:values (validate params model messages)) expected)
+       {:a "good"} {:a {:type :string :required true}} {:a "good"}
+       {:a "1"} {:a {:type :int :required true}} {:a 1}))
 
 
 
