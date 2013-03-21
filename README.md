@@ -30,27 +30,21 @@ The main validation function is `taoclj.pure/validate` which has the following s
 (require '[taoclj.pure :as pure])
 
 
-(pure/validate {:id "3x"}
-          	{:id {:type :int :required true}}
-          	{:int/required ":name is required!"})
-
+(pure/validate {:id "3x"} {:id {:type :int :required true}} {:int/required ":name is required!"})
 => {:errors {:id "id is required!"}
     :params {:id "3x"}
     :values {:id nil}}
 
 
-
-(pure/validate {:id "3"}
-          	{:id {:type :int :required true}}
-          	{:int/required ":name is required!"})
-
+(pure/validate {:id "3"} {:id {:type :int :required true}} {:int/required ":name is required!"})
 => {:errors nil 
     :params {:id "3"} 
     :values {:id 3}} ;; the id has been parsed into an integer
 
+
 ```
 
-s
+
 
 ###Validation Rules:
 ```clojure
