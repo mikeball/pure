@@ -1,4 +1,4 @@
-(defproject org.taoclj/pure "0.0.1"
+(defproject org.taoclj/pure "0.0.2-SNAPSHOT"
   :description "A validation and parameter parsing library"
 
   :url "http://github.com/mikeball/pure"
