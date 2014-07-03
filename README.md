@@ -1,92 +1,146 @@
 # Pure
 
-Pure is a validation, and parameter parsing library for clojure. 
+Pure is a validation, and parameter parsing library for clojure. It has a simple syntax and allows custom validation functions.
 
-One of the most tedious parts of building applications is validating & parsing string based parameters into the values your application needs such as integers and datetimes. Pure allows you to specify a model with the type of an attribute, as well as validation rules, then have the parsing and validation performed automatically.
+One of the most tedious parts of building applications is validating & parsing string based parameters into the values your application needs such as integers and datetimes. Pure allows you to specify a model with the type of an attribute, as well as a set of conditions, then check a map of data against the rules and have data parsed as well.
 
+Status : experimental with major changes likely.
+
+
+```clojure
+[org.taoclj/pure "0.0.3"]
+```
 
 [![Continuous Integration status](https://secure.travis-ci.org/mikeball/pure.png)](http://travis-ci.org/mikeball/pure)
 
 
-## Installation
-
-Add the following dependency to your `project.clj` file:
-
-```clojure
-[org.taoclj/pure "0.0.1"]
-```
-
-
 ## Usage
-
-The main validation function is `taoclj.pure/validate` which has the following syntax:
 ```clojure
-(taoclj.pure/validate params model messages)
-```
+(require '[taoclj.pure :refer [defm check]])
 
 
-###Examples:
-```clojure
-(require '[taoclj.pure :as pure])
+; Create a model with some simple rules
+(defm model
+  {:name [:string :required [:length 3 10]
+          "Name is required and must be between 3 and 10 characters long."]
+
+   :age [:int [:range 21 130] "Age is optional but must be at least 21"]})
 
 
-(pure/validate {:id "3x"} {:id {:type :int :required true}} {:int/required ":name is required!"})
-=> {:errors {:id "id is required!"}
-    :params {:id "3x"}
-    :values {:id nil}}
+; A check with invalid data
+(check model {:name " bo " :age "18"})
+
+=> {:errors {:name "Name is required and must be between 3 and 10 characters long."
+             :age "Age is optional but must be at least 21" }
+    :raw {:name " bo ", :age "18"}}
 
 
-(pure/validate {:id "3"} {:id {:type :int :required true}} {:int/required ":name is required!"})
-=> {:errors nil 
-    :params {:id "3"} 
-    :values {:id 3}} ;; the id has been parsed into an integer
+; A check with valid data, note the age is parsed to an integer, not string.
+(check model {:name "bob" :age "21"})
 
-
-```
-
-
-
-###Validation Rules:
-```clojure
-
-{:type :string
- :required true  ;; param must not be nil or blank
- :required false ;; param may be nil or any value
- :length [2 nil] ;; must be 2 or more characters long
- :length [nil 5] ;; must be 5 or less characters long
- :length [2 5]   ;; must be between 2 and 5 characters long
- :custom my-fn } ;; a function that is passed the parameter & returns error string on failure, nil if ok.
-
-{:type :int
- :required true  ;; param must parsable into integer
- :required false ;; param may be nil or any value
- :range [2 nil]  ;; must be 2 or greater
- :range [nil 5]  ;; must be 5 or less 
- :range [2 5] }  ;; must be between 2 and 5
-
-{:type :email 
- :required true  ;; param must not be nil or blank, and valid format
- :required false ;; param may be nil/blank or if supplied a valid format 
- :custom my-fn } ;; a function that is passed the parameter & returns error string on failure, nil if ok.
+=> {:values {:age 21 :name "bob"}
+    :raw {:name "bob" :age "21"}}
 
 ```
 
 
+## Rules
 
-###Messages:
+Rules are simply a vector with the first element being the type such as :string or :int and the last being the error message. You can add multiple conditions between the type and the message.
+
 ```clojure
-{:string/required ":name is required"
- :string/length-short ":min or more characters long"
- :string/length-long ":max or less characters long"
- 
- :int/required ":name is required"
- :int/range-under ":min or more"
- :int/range-over ":max or less"
- :int/range "between :min :max"
- 
- :email/required ":name is required"
- :email/invalid ":name must be valid email"}
+; Rule format
+[datatype condition1 condition2 conditionX failure-message]
 ```
+
+
+
+
+## Conditions
+```clojure
+
+; :string Conditions
+:required         ; you must supply a non-blank string
+[:length 2 nil]   ; must be at least 2 or more characters long
+[:length nil 5]   ; must be 5 or less characters long
+[:length [2 5]]   ; must be between 2 and 5 characters long
+
+
+; :int Conditions
+:required         ; you must supply a valid integer
+[:range 2 nil]    ; must be an integer 2 or greater
+[:range nil 5]    ; must be an integer 5 or less
+[:range 2 5] }    ; must be an integer between 2 and 5
+
+
+; :email Conditions
+:required         ; you must supply a valid email address
+
+
+
+; Custom Conditions are simply functions you write.
+; They must have an arity of 2 with the first parameter being the culture code, and the second being the parsed value.
+; The function should return an error message if there is a problem, nil otherwise.
+
+(fn [culture-code parsed-value]
+  (if no-error nil
+               "A message describing the problem"))
+
+
+```
+
+
+
+
+## Localized Error Messages
+
+You can localize error messages by passing a map rather than a string as the last element of the
+rule. You must include a default key and any other culture codes you would like.
+
+```clojure
+; A localized message
+(defm localized-model
+  {:a [:string :required {:default "error"
+                          :de-de "Fehler"}]})
+
+; A check uses the passed culture code pick error message
+(check localized-model {:a ""} :de-de)
+=> {:errors {:a "Fehler"}, :raw {:a ""}}
+
+; Unknown culture-codes fall back to default text
+(check localized-model {:a ""} :fr-fr)
+=> {:errors {:a "error"}, :raw {:a ""}}
+
+
+
+; The culture-code is also passed to custom condition functions.
+
+(defn my-condition [culture-code parsed-value]
+  (if (= parsed-value "good") nil
+    (str "My custom error determined by culture-code " culture-code)))
+
+(defm localized-custom-model
+  {:a [:string my-condition {:default "error"
+                             :de-de "Fehler"}]})
+
+(check localized-custom-model {:a "bad"} :de-de)
+=> {:errors {:a "My custom error determined by culture-code :de-de"} :raw {:a "bad"}}
+
+(check localized-custom-model {:a "good"} :de-de)
+=> {:values {:a "good"} :raw {:a "good"}}
+
+```
+
+
+## TODO
+
+- add date/time support
+- regex conditions? e.g. [:string :required #"a regex" "error msg"]
+
+
+
+
+
 
 
 ## License

@@ -1,51 +1,62 @@
 (ns taoclj.pure
   (:require [clojure.string :only [blank? trim] :as str]
-            [taoclj.pure.validations :as validations]
-            [taoclj.pure.parsing :as parsing]))
-
-(defn parse [type raw] (parsing/parse type raw))
-
-(defn- get-ordered-rules [type]
-  (cond (= type :string) [:required :length :custom]
-        (= type :int) [:required :range]
-        (= type :email) [:required :custom]
-        :default []))
+            [taoclj.pure.parsing :as parsing]
+            [taoclj.pure.rules :as rules]))
 
 
-(defn- check-for-error
-  "Check a value against all rules and returns first error found, nil if no errors found"
-  [type rules messages param]
-  (first (filter #(not (nil? %))
-                 (for [rule-name (get-ordered-rules type)]
-                   (let [rule (find rules rule-name)]
-                     (if-let [rule (find rules rule-name)]
-                       (validations/check {:type type 
-                                           :rule rule 
-                                           :param param 
-                                           :messages messages})))))))
+(defn parse
+  "Direct parsing of data"
+  [type raw] (parsing/parse type raw))
 
 
-(defn check-rules [{:keys [type param rules messages]}]
-  (let [val (parsing/parse type (second param))]
-    [val (check-for-error type rules messages [(first param) val])]))
+(defn compile-model
+  "transforms one map into another with the validation function for each key in the new map"
+  [m]
+  (let [model-keys (keys m)]
+    (zipmap model-keys
+            (map (fn [k] (rules/rule-fn k (k m)))
+                 model-keys))))
+
+;; (compile-model {:id [:string :required "e*"]})
 
 
-(defn check-all [model messages params]
-  (for [name (keys model)]
-    [name (check-rules {:type (-> model name :type)
-                        :rules (-> model name)
-                        :messages messages
-                        :param [name (params name)]})]))
+(defmacro defm
+  "A simple way to define a pure model"
+  [name & model]
+  `(def ~name (compile-model ~@model)))
 
 
-(defn validate
-  "Validates a supplied map of parameters against a model. If errors are found, they are placed in the errors in returned map. Only parameter names in the allowed list will be parsed, validated and placed into the values map."
-  [params model messages]
-  (let [results (check-all model messages params)
-        errors (reduce (fn [errors [name [_ error]]] 
-                         (if error (assoc errors name error) errors)) {} results)
-        values (reduce (fn [values [name [val _]]] (assoc values name val)) {} results)]
-    {:errors (if-not (empty? errors) errors)
-     :params params
-     :values values}))
+
+(defn check
+  "Validates a map against a pure model."
+  ([model params] (check model params :default))
+  ([model params culture]
+
+   (let [model-keys (keys model)
+
+         checks (zipmap model-keys
+                        (map (fn [k] ((k model) (k params) culture)  )
+                             model-keys))
+
+         errors (into {} (remove nil?
+                               (for [k model-keys]
+                                 (if-not (-> checks k :ok)
+                                   [k (-> checks k :msg)]))))
+
+
+
+         ; we need to unit test this, I think there's a problem with model-keys!
+         values (into {} (for [k model-keys]
+                         [k (-> checks k :val)]))
+
+
+         error? (not (empty? errors))]
+
+     (-> {:raw params} ; rename params to :raw ?
+
+         ((fn [result] (if-not error? result
+                        (assoc result :errors errors))))
+
+         ((fn [result] (if error? result
+                        (assoc result :values values))))) )))
 
