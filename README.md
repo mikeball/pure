@@ -136,7 +136,6 @@ rule. You must include a default key and any other culture codes you would like.
 ## TODO
 
 - add date/time support
-- regex conditions? e.g. [:string :required #"a regex" "error msg"]
 
 
 
