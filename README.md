@@ -65,7 +65,7 @@ Rules are simply a vector with the first element being the type such as :string 
 [:length 2 nil]   ; must be at least 2 or more characters long
 [:length nil 5]   ; must be 5 or less characters long
 [:length 2 5]     ; must be between 2 and 5 characters long
-
+#"x"              ; must match the regular expression
 
 ; :int conditions
 :required         ; you must supply a valid integer
