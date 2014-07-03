@@ -22,7 +22,6 @@
 (deftest invalid-string-length-conditions-are-not-allowed
   (is (thrown? Exception (c/read-rule :id [:string [:length] {}]))))
 
-
 (deftest simple-2-element-rules-are-read
   (are [msg]
        (= {:type :string :messages {:default "m"}}
@@ -37,4 +36,20 @@
          (c/read-rule :id [:string :required "m*"])))
 
   (is (= {:type :string :required true :conditions '([:length 5 20]) :messages {:default "m*"}}
-         (c/read-rule :id [:string :required [:length 5 20] "m*"]))))
+         (c/read-rule :id [:string :required [:length 5 20] "m*"])))
+
+  )
+
+
+
+
+
+
+
+
+
+
+
+
+
+

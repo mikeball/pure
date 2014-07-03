@@ -27,6 +27,9 @@
           (vector? condition)     [type (first condition)]
           (fn? condition)         :custom
 
+          (= (str (class condition))
+             "class java.util.regex.Pattern") :regex
+
           :default (throw (Exception. (str "Invalid condition - " type " / " condition)))
 
           )))
@@ -47,6 +50,10 @@
 
       (not (or short long)))))
 
+(defmethod check-condition :regex [_ condition _ value]
+  (cond (nil? value)  true
+        :else         (not (nil? (re-find condition value)))))
+
 (defmethod check-condition [:int :range] [_ condition _ value]
   (if (nil? value) true
     (let [minumum (second condition)
@@ -55,9 +62,7 @@
           over (and (not (nil? maximum)) (or (nil? value) (> value maximum)))]
       (not (or under over)))))
 
-
 ; (check-condition :int [:range 2 5] :default nil)
-
 
 
 
@@ -67,6 +72,7 @@
 ;;                  [:datetime {:default "mm/dd/yyyy"
 ;;                              :de-de "yyyy/mm/dd"}]
 ;;                  :default "")
+
 
 
 (defn check-conditions

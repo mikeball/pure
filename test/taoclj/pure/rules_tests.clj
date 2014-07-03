@@ -36,6 +36,12 @@
        [:string [:length nil 2] "e*"]  "xx"   {:ok true :val "xx"}
        [:string [:length nil 2] "e*"]  "xx "  {:ok true :val "xx"}
        [:string [:length nil 2] "e*"]  "xxx"  {:ok false :msg "e*" :val "xxx"}
+
+       [:string #"x" "e*"]             nil    {:ok true :val nil}
+       [:string #"x" "e*"]             ""     {:ok true :val nil}
+       [:string #"x" "e*"]             "a"    {:ok false :msg "e*" :val "a"}
+       [:string #"x" "e*"]             "x"    {:ok true :val "x"}
+
        ))
 
 

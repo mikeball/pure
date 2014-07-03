@@ -33,45 +33,37 @@
 
 (defmethod validate-condition :string [_ field condition]
 
-  (if (and (keyword? condition)
-           (in? [:required] condition)) true
+  (cond (and (keyword? condition) (in? [:required] condition))
+        true
 
-      (if (vector? condition)
-        (let [c (first condition)]
+        (= (str (class condition)) "class java.util.regex.Pattern")
+        true
 
-          (case c
+        (and (vector? condition) (= (first condition) :length))
+        (if (= (count condition) 3) true
+          (error field "Invalid :length condition"))
 
-            :length (if (= (count condition) 3) true
-                      (error field "Invalid :length condition"))
+        :else
+        (error field (str "Invalid condition: " condition))
 
-            ))
-
-        (error field (str "Invalid condition: " condition)))
-
-    ))
+        ))
+; (validate-condition :string :id #"a")
 
 
 (defmethod validate-condition :int [_ field condition]
 
-  (if (and (keyword? condition)
-           (in? [:required] condition)) true
+  (cond (and (keyword? condition) (in? [:required] condition))
+        true
 
-      (if (vector? condition)
-        (let [c (first condition)]
-
-          (case c
-
-            :range (if (= (count condition) 3) true
-                      (error field "Invalid :range condition"))
-
-            ))
-
-        (error field (str "Invalid condition: " condition)))
-
-    ))
+        (and (vector? condition) (= (first condition) :range))
+        (if (= (count condition) 3) true
+          (error field "Invalid :range condition"))
 
 
+        :else
+        (error field (str "Invalid condition: " condition))
 
+        ))
 
 
 (defn read-rule
@@ -123,6 +115,8 @@
                         rr)) conditions)
             ))))
 
+
+; (read-rule :id [:string #"z" "e*"])
 
 
 
