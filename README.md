@@ -30,16 +30,16 @@ Status : experimental with major changes likely.
 
 => {:errors {:name "Name is required and must be between 3 and 10 characters long."
              :age "Age is optional but must be at least 21" }
-    :raw {:name " bo ", :age "18"}}
+    :raw {:name "bo ", :age "18"}}
 
 
 ; A check with valid data
-(check model {:name "bob" :age "21"})
+(check model {:name "bob " :age "21"})
 
-=> {:values {:name " bob " :age 21}
-    :raw {:name "bob" :age "21"}}
+=> {:values {:name "bob" :age 21}
+    :raw {:name "bob " :age "21"}}
 
-    ; *note the name is trimmed and age is parsed into integer
+    ; * note the name is trimmed and age is parsed to integer
 
 
 ```
@@ -76,7 +76,6 @@ Rules are simply a vector with the first element being the type such as :string 
 
 ; :email conditions
 :required         ; you must supply a valid email address
-
 
 
 ; Custom conditions are simply functions you write.
@@ -147,6 +146,6 @@ rule. You must include a default key and any other culture codes you would like.
 
 ## License
 
-Copyright © 2012 Michael Ball
+Copyright © 2014 Michael Ball
 
 Distributed under the Eclipse Public License, the same as Clojure.
