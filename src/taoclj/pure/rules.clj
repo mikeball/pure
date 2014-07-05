@@ -112,7 +112,7 @@
       ; parse the raw data
       (let [cc (first culture-code)
             culture (if (and cc (msgs cc)) cc :default)
-            parsed (parsing/parse type raw)
+            parsed (parsing/parse type raw nil)
             value (:val parsed)]
 
         (cond  ; parsing failure return error

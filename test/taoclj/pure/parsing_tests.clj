@@ -3,7 +3,7 @@
 
 
 (deftest parse-strings
-  (are [type raw expected] (= (parse type raw) expected)
+  (are [type raw expected] (= (parse type raw nil) expected)
 
        :string nil   {:ok true :val nil}
        :string ""    {:ok true :val nil}
@@ -16,7 +16,7 @@
 
 
 (deftest parse-ints
-  (are [type raw expected] (= (parse type raw) expected)
+  (are [type raw expected] (= (parse type raw nil) expected)
 
        :int nil     {:ok true :val nil}
        :int ""      {:ok true :val nil}
