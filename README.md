@@ -79,12 +79,13 @@ Rules are simply a vector with the first element being the type such as :string 
 
 
 ; Custom conditions are simply functions you write.
-; They must have an arity of 2 with the first parameter being
-; the culture code, and the second being the parsed value.
-; The function should return an error message
-; if there is a problem, nil otherwise.
+; They must have an arity of 2.
+; The function should return true if the value is ok.
+; If you return a string, it will be considered a failure
+; and used as the error message. All other responses are considered
+; failures and will use the regular error messages.
 
-(fn [parsed-value culture-code ]
+(fn [parsed-value culture-code]
   (if no-error true
                "A message describing the problem"))
 
