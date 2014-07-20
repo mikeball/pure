@@ -58,6 +58,15 @@
 (check localized-custom-model {:a "bad"} :de-de)
 (check localized-custom-model {:a "good"} :de-de)
 
+(defn my-condition [parsed-value culture source]
+  (if (= parsed-value "good") nil
+    (str "My custom error determined by culture-code " culture-code)))
+
+{:culture :de-de
+ :source  original-map
+ }
+
+
 
 
 

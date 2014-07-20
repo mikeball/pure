@@ -84,8 +84,8 @@ Rules are simply a vector with the first element being the type such as :string 
 ; The function should return an error message
 ; if there is a problem, nil otherwise.
 
-(fn [culture-code parsed-value]
-  (if no-error nil
+(fn [parsed-value culture-code ]
+  (if no-error true
                "A message describing the problem"))
 
 
@@ -115,9 +115,9 @@ rule. You must include a default key and any other culture codes you would like.
 
 
 
-; The culture-code is also passed to custom condition functions.
-(defn my-condition [culture-code parsed-value]
-  (if (= parsed-value "good") nil
+; The culture-code is passed to custom condition functions.
+(defn my-condition [parsed-value culture-code]
+  (if (= parsed-value "good") true
     (str "My custom error determined by culture-code " culture-code)))
 
 (defm localized-custom-model
@@ -133,9 +133,20 @@ rule. You must include a default key and any other culture codes you would like.
 ```
 
 
-## TODO
+## Potential Features
 
-- add date/time support
+- date/time support
+- before/after date condition
+- validation across/between keys, eg validate passwords match
+- multi-level or sub item validation
+- phone number type
+- postal code type
+- ISO country code type
+- US state type
+- collection validation
+- condition exists in set/list [:oneof :a :b :c "err"]
+
+
 
 
 
