@@ -36,9 +36,14 @@
         (= (str (class condition)) "class java.util.regex.Pattern")
         true
 
+
         (and (vector? condition) (= (first condition) :length))
         (if (= (count condition) 3) true
           (error path "Invalid :length condition"))
+
+        ; cross key validation
+        (and (vector? condition) (= (first condition) :*))
+        true ; todo add more structural validation for cross key conditions
 
         :else
         (error path (str "Invalid condition: " condition))))
@@ -53,8 +58,37 @@
           (error path "Invalid :range condition"))
 
 
+        ; cross key validation
+        (and (vector? condition) (= (first condition) :*))
+        true ; todo add more structural validation for cross key conditions
+
+
+
         :else
         (error path (str "Invalid condition: " condition))))
+
+
+(defn validate-datetime-condition [path condition]
+  (cond (and (keyword? condition) (in? [:required] condition))
+        true
+
+;;         (and (vector? condition) (= (first condition) :range))
+;;         (if (= (count condition) 3) true
+;;           (error path "Invalid :range condition"))
+
+
+        :else
+        (error path (str "Invalid condition: " condition))))
+
+
+(defn validate-email-condition [path condition]
+  (cond (and (keyword? condition) (in? [:required] condition))
+        true
+
+
+        :else
+        (error path (str "Invalid condition: " condition))))
+
 
 
 (defn validate-custom-condition [path condition]
@@ -63,8 +97,8 @@
   (let [m (first (filter #(= "invoke" (.getName %)) (.getDeclaredMethods (class condition))))
         p (.getParameterTypes m)]
 
-    (if (= 2 (alength p)) true
-      (error path (str "Custom conditions must have arity of 2. (fn [culure value] ... )")))
+    (if (= 3 (alength p)) true
+      (error path (str "Custom conditions must have arity of 3. (fn [culure value] ... )")))
 
     ))
 
@@ -81,9 +115,11 @@
   [path datatype condition]
 
   (cond
-   (fn? condition)       (validate-custom-condition path condition)
-   (= datatype :string)  (validate-string-condition path condition)
-   (= datatype :int)     (validate-int-condition    path condition)
+   (fn? condition)         (validate-custom-condition    path condition)
+   (= datatype :string)    (validate-string-condition    path condition)
+   (= datatype :int)       (validate-int-condition       path condition)
+   (= datatype :datetime)  (validate-datetime-condition  path condition)
+   (= datatype :email)  (validate-email-condition     path condition)
 
    :else (throw (Exception.
                  (error path

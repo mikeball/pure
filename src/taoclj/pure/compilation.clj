@@ -14,6 +14,7 @@
     :string    parsers/parse-string
     :int       parsers/parse-int
     :datetime  parsers/parse-datetime
+    :email     parsers/parse-email
     (throw (Exception. (str "Unknown type in the rule for " path)))))
 
 
@@ -35,7 +36,7 @@
 
 
 (defn compile-string-length-condition [min max]
-  (fn [value _]
+  (fn [_ value _]
     (if (nil? value) true
       (let [len (count value)
             short (and (not (nil? min)) (< len min))
@@ -43,8 +44,20 @@
         (not (or short long))))))
 
 
+(defn compile-cross-key-condition [condition]
+  (fn [values value _]
+
+    (if (nil? value) true
+
+      (let [f    (second condition)
+            ks   (drop 2 condition)
+            xval (get-in values ks) ]
+
+        (f value xval) ))))
+
+
 (defn compile-int-range-condition [min max]
-  (fn [value _]
+  (fn [_ value _]
     (if (nil? value) true
     (let [under (and (not (nil? min)) (or (nil? value) (< value min)))
           over (and (not (nil? max)) (or (nil? value) (> value max)))]
@@ -52,16 +65,15 @@
 
 
 (defn compile-regex-condition [rx]
-  (fn [value _]
+  (fn [_ value _]
     (cond (nil? value)  true
           :else         (not (nil? (re-find rx value))))))
-
 
 
 (defn compile-condition [path datatype condition]
 
   (cond (= condition :required)
-        (fn [value _] (not (nil? value)))
+        (fn [_ value _] (not (nil? value)))
 
 
         (vector? condition)
@@ -73,6 +85,14 @@
 
             [:int :range]
             (compile-int-range-condition (second condition) (nth condition 2))
+
+
+            [:string :*]
+            (compile-cross-key-condition condition)
+
+            [:int :*]
+            (compile-cross-key-condition condition)
+
 
             :else
             (condition-error datatype condition)))
@@ -158,6 +178,16 @@
          (compile-rule path (get-in model path)))
 
          (get-paths model) )))
+
+
+(compile-model
+
+  {:password [:string "pe*"]
+   :confirm  [:string [:* = :password] "ce*"]}
+
+  )
+
+
 
 ; (compile-model {:name [:string :required "e*"]})
 

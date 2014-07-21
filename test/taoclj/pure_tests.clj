@@ -100,39 +100,40 @@
   (are [rule raw error value]
        (test-error-and-value rule raw :default error value)
 
-       [:datetime "MM/dd/yyyy" "e*"]   nil          nil   nil
-       [:datetime "MM/dd/yyyy" "e*"]   ""           nil   nil
-       [:datetime "MM/dd/yyyy" "e*"]   1            "e*"  nil
-       [:datetime "MM/dd/yyyy" "e*"]   "7/14/2014"  nil   (t/date-time 2014 7 14)
+       [:datetime "MM/dd/yyyy" "e*"]   nil          nil    nil
+       [:datetime "MM/dd/yyyy" "e*"]   ""           nil    nil
+       [:datetime "MM/dd/yyyy" "e*"]   1            "e*"   nil
+       [:datetime "MM/dd/yyyy" "e*"]   "7/14/2014"  nil    (t/date-time 2014 7 14)
 
-       ; :required todo
-       ; :range condition just like int?
-       ; or this? [:datetime "yyyy-MM-dd" [:before :hours -10] "e*"]
+       [:datetime
+        "MM/dd/yyyy" :required "e*"]   nil          "e*"   nil
 
        ))
 
 
 
-;; (deftest email-rules-are-enforced
-;;   (are [rule raw expected]
-;;        (= ((r/rule-fn :id rule) raw) expected)
 
-;;        [:email "e*"]            nil          {:ok true :val nil}
-;;        [:email "e*"]            ""           {:ok true :val nil}
-;;        [:email "e*"]            " "          {:ok true :val nil}
-;;        [:email "e*"]            "a@b.com"    {:ok true :val "a@b.com"}
-;;        [:email "e*"]            " a@b.com "  {:ok true :val "a@b.com"}
-;;        [:email "e*"]            "x"          {:ok false :msg "e*" :val "x"}
+(deftest email-rules-are-enforced
+  (are [rule raw error value]
+       (test-error-and-value rule raw :default error value)
 
-;;        [:email :required "e*"]  nil                {:ok false :msg "e*" :val nil}
-;;        [:email :required "e*"]  ""                 {:ok false :msg "e*" :val nil}
-;;        [:email :required "e*"]  "a@b.com"          {:ok true :val "a@b.com"}
-;;        [:email :required "e*"]  "tag+a@b.com"      {:ok true :val "tag+a@b.com"}
-;;        [:email :required "e*"]  "x"                {:ok false :msg "e*" :val "x"}
-;;        [:email :required "e*"]  "a@b.none"         {:ok false :msg "e*" :val "a@b.none"}
-;;        [:email :required "e*"]  "a@b.com,@a@b.com" {:ok false :msg "e*" :val "a@b.com,@a@b.com"}
+       [:email "e*"]   nil          nil    nil
+       [:email "e*"]   ""           nil    nil
+       [:email "e*"]   " "          nil    nil
+       [:email "e*"]   "a@b.com"    nil    "a@b.com"
+       [:email "e*"]   " a@b.com "  nil    "a@b.com"
+       [:email "e*"]   "x"          "e*"   nil
 
-;;        ))
+       [:email :required "e*"]  nil                 "e*"  nil
+       [:email :required "e*"]  ""                  "e*"  nil
+       [:email :required "e*"]  "a@b.com"           nil   "a@b.com"
+       [:email :required "e*"]  "tag+a@b.com"       nil   "tag+a@b.com"
+       [:email :required "e*"]  "x"                 "e*"  nil
+       [:email :required "e*"]  "a@b.none"          "e*"  nil
+       [:email :required "e*"]  "a@b.com,@a@b.com"  "e*"  nil
+
+   ))
+
 
 
 
@@ -142,19 +143,15 @@
        (test-error-and-value rule raw :default error nil)
 
        ; custom conditions that return true indicate pass
-       [:string (fn [_ _] true) "e*"]     ""   nil
+       [:string (fn [_ _ _] true) "e*"]     ""   nil
 
        ; any non-true result from custom conditions are failures
-       [:string (fn [_ _] nil) "e*"]      ""   "e*"
-       [:string (fn [_ _] false) "e*"]    ""   "e*"
+       [:string (fn [_ _ _] nil) "e*"]      ""   "e*"
+       [:string (fn [_ _ _] false) "e*"]    ""   "e*"
 
        ; string results from custom conditions are considered error messages
-       [:string (fn [_ _] "msg*") "e*"]   ""   "msg*"
+       [:string (fn [_ _ _] "msg*") "e*"]   ""   "msg*"
   ))
-
-
-
-
 
 
 
@@ -197,7 +194,7 @@
          (:errors
           (pure/check
             (compilation/compile-model
-              {:name [:string (fn [value culture] (str value " " culture)) "e*"]})
+              {:name [:string (fn [_ value culture] (str value " " culture)) "e*"]})
             {:name "x"}
              :de-de))
 
@@ -243,6 +240,70 @@
 
 
 
+(deftest string-cross-key-conditions-are-enforced
+
+  (are [condition a-val b-val expected]
+
+       (= expected
+       (:errors
+        (pure/check
+         (compilation/compile-model
+          {:a [:string "e*a"]
+           :b [:string condition "e*b"]})
+
+         {:a a-val :b b-val} )))
+
+
+       [:* = :a] "x" "y" {:b "e*b"}
+       [:* = :a] "x" "x" nil
+
+
+       )
+
+
+  )
+
+
+
+(deftest int-cross-key-conditions-are-enforced
+
+  (are [condition a-val b-val expected]
+
+       (= expected
+       (:errors
+        (pure/check
+         (compilation/compile-model
+          {:a [:int "e*a"]
+           :b [:int condition "e*b"]})
+
+         {:a a-val :b b-val} )))
+
+
+       [:* = :a] "1" "2" {:b "e*b"}
+       [:* = :a] "1" "1" nil
+
+       )
+  )
+
+
+
+
+;; (pure/check
+;;          (compilation/compile-model
+;;           {:a [:int "e*a"]
+;;            :b [:int [:* = :a] "e*b"]})
+
+;;          {:a "1" :b "1"} )
+
+
+
+;; (pure/check
+;;  (compilation/compile-model  {:password [:string "pe*"]
+;;                               :confirm  [:string [:* = :password] "ce*"]}
+;;   )
+;;        {:password "a"
+;;         :confirm "b"}
+;;        )
 
 
 

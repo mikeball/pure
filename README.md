@@ -134,7 +134,7 @@ rule. You must include a default key and any other culture codes you would like.
 ```
 
 
-## Potential Features
+## TODO
 
 - date/time support
 - before/after date condition

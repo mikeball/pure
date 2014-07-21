@@ -38,18 +38,18 @@
           {:ok true :val (tf/parse (tf/formatter fmt) raw)}
           (catch Exception e {:ok false :val nil}))  ))
 
-; (parse-datetime "03/01/2014" "MM/dd/yyyy")
 
+(defn parse-email [raw _]
+  (cond (nil? raw)          {:ok true :val nil}
+        (not (string? raw)) {:ok false}
+        (str/blank? raw)    {:ok true :val nil}
 
-;; (defn parse-email [raw _]
-;;   (cond (nil? raw)          {:ok true :val nil}
-;;         (not (string? raw)) {:ok false}
-;;         (str/blank? raw)    {:ok true :val nil}
-;;         :default {:ok (.isValid (EmailValidator/getInstance) raw)
-;;                   :val (str/trim raw)}))
-
-
-
+        :default
+        (let [ok (.isValid (EmailValidator/getInstance) raw)]
+          {:ok ok
+           :val (if ok (str/trim raw))}
+          )
+        ))
 
 
 

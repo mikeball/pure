@@ -62,11 +62,11 @@
 
 
 (defn check-field-conditions
-  [field-path culture conditions value]
+  [field-path culture conditions value values]
 
   (first (filter #(not (nil? %))
                  (map (fn [condition]
-                        (let [result (condition value culture)]
+                        (let [result (condition values value culture)]
                           (cond (true? result)     nil
                                 (string? result)   {:field field-path :msg result}
                                 :else              field-path
@@ -140,7 +140,9 @@
 
   (let [model-keys (keys model)
 
-        parse-results (parse-raw model-keys model raw culture)
+        parse-results  (parse-raw model-keys model raw culture)
+
+        values  (extract-values parse-results)
 
         parsed-ok     (filter #(true? (get-in parse-results [% :ok]))
                               model-keys )
@@ -153,12 +155,13 @@
                                      (check-field-conditions path
                                                              culture
                                                              (get-in model [path :conditions])
-                                                             (get-in parse-results [path :val]))
+                                                             (get-in parse-results [path :val])
+                                                             values)
                                      ))
 
         all-failures (concat parse-failures condition-failures)
 
-        result        {:raw raw :values (extract-values parse-results) }
+        result        {:raw raw :values values}
         ]
 
 
@@ -171,7 +174,12 @@
    ))
 
 
-
+;; (check
+;;  (compilation/compile-model  {:password [:string "pe*"]
+;;                               :confirm  [:string [:* = :password] "ce*"]} )
+;;        {:password "a"
+;;         :confirm "a"}
+;;        )
 
 
 ;; (defmacro defm
