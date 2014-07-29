@@ -180,12 +180,12 @@
          (get-paths model) )))
 
 
-(compile-model
+;; (compile-model
 
-  {:password [:string "pe*"]
-   :confirm  [:string [:* = :password] "ce*"]}
+;;   {:password [:string "pe*"]
+;;    :confirm  [:string [:* = :password] "ce*"]}
 
-  )
+;;   )
 
 
 
