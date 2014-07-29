@@ -46,14 +46,10 @@
 
 (defn compile-cross-key-condition [condition]
   (fn [values value _]
-
-    (if (nil? value) true
-
-      (let [f    (second condition)
+    (let [f    (second condition)
             ks   (drop 2 condition)
             xval (get-in values ks) ]
-
-        (f value xval) ))))
+        (f value xval))))
 
 
 (defn compile-int-range-condition [min max]

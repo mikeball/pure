@@ -253,13 +253,12 @@
 
          {:a a-val :b b-val} )))
 
-
+       [:* = :a] "x" ""  {:b "e*b"}
        [:* = :a] "x" "y" {:b "e*b"}
        [:* = :a] "x" "x" nil
 
 
        )
-
 
   )
 
@@ -287,14 +286,12 @@
 
 
 
-
 ;; (pure/check
 ;;          (compilation/compile-model
-;;           {:a [:int "e*a"]
-;;            :b [:int [:* = :a] "e*b"]})
+;;           {:a [:string "e*a"]
+;;            :b [:string [:* = :a] "e*b"]})
 
-;;          {:a "1" :b "1"} )
-
+;;          {:a "x" :b ""} )
 
 
 ;; (pure/check
