@@ -4,26 +4,21 @@
 
 ; ## A Quick Intro
 
-; Create a model with some simple rules
+; Create a model with some rules
 (defm model
   {:name [:string :required [:length 3 10]
-          "Name is required and must be between 3 and 10 characters long."]
+          "Name is required and must be between 3 and 10 characters."]
 
    :age [:int [:range 21 130] "Age is optional but must be at least 21"]})
-
-; you can also use the taoclj.pure.compilation/compile-model function to build a model like this
-; (compile-model {:name [:string :required "error"]})
-
 
 
 ; Let's check some invalid data
 (check model {:name " bo " :age "18"})
 
 => {:errors {:age "Age is optional but must be at least 21"
-             :name "Name is required and must be between 3 and 10 characters long."},
+             :name "Name is required and must be between 3 and 10 characters."}
     :raw {:name " bo ", :age "18"}
     :values {:age 18, :name "bo"}}
-
 
 
 
@@ -57,7 +52,8 @@
 
 ; a model for a simple string
 (defm string-model
-  {:name [:string :required [:length 2 4] "Name must be between 2 and 4 characters long"]})
+  {:name [:string :required [:length 2 4]
+          "Name must be between 2 and 4 characters"]})
 
 ; a name that's too short, note whitespace is trimmed
 (check string-model {:name " x "})
@@ -79,7 +75,7 @@
     :values {:name "xxxxx"}}
 
 
-; Non string key values are considered invalid
+; Non string values are considered invalid
 (check string-model {:name 1})
 
 => {:errors {:name "Name must be between 2 and 4 characters"}
@@ -111,7 +107,41 @@
 
 ; ## Int Validation
 
-; todo
+
+(defm int-model
+  {:age [:int :required [:range 21 130]
+         "Age is required and must between 21 and 130"]})
+
+
+; age is required
+(check int-model {:age ""})
+
+=> {:errors {:age "Age is required and must between 21 and 130"}
+    :raw    {:age ""}
+    :values {:age nil}}
+
+
+; age must be a valid integer
+(check int-model {:age "x"})
+=> {:errors {:age "Age is required and must between 21 and 130"}
+    :raw    {:age "x"}
+    :values {:age nil}}
+
+
+; age must be within the specified range
+(check int-model {:age "20"})
+
+=> {:errors {:age "Age is required and must between 21 and 130"}
+    :raw    {:age "20"}
+    :values {:age 20}}
+
+
+; finally a valid age
+(check int-model {:age "21"})
+
+=> {:raw {:age "21"}
+    :values {:age 21}}
+
 
 
 
@@ -145,27 +175,79 @@
 
 
 
+; ## Email Validation
+
+(defm email-model
+  {:contact [:email :required "Please supply a valid email contact address"]})
+
+; email is required
+(check email-model {:contact ""})
+
+=> {:errors {:contact "Please supply a valid email contact address"}
+    :raw    {:contact ""}
+    :values {:contact nil}}
+
+
+; email must be valid
+(check email-model {:contact "x@x.x"})
+
+=> {:errors {:contact "Please supply a valid email contact address"}
+    :raw    {:contact "x@x.x"}
+    :values {:contact nil}}
+
+
+; valid emails are cleaned and allowed
+(check email-model {:contact " x@x.com "})
+
+=> {:raw    {:contact " x@x.com "}
+    :values {:contact "x@x.com"}}
+
+
+
+
+
 
 ; ## Nested Validation
 
-; todo
+
+(defm nested-model
+  {:address {:street [:string :required "Address is required"]}})
+
+; street is required, and nested error messages are present
+(check nested-model {})
+=> {:errors {:address {:street "Address is required"}}
+    :raw    {}
+    :values {:address {:street nil}}}
+
+
+; a valid address is allowed
+(check nested-model {:address {:street " 123 Oak "}})
+=> {:raw    {:address {:street " 123 Oak "}}
+    :values {:address {:street "123 Oak"}}}
 
 
 
 
 ; ## Cross Field Validation
 
-; todo
+(defm cross-model
+  {:password [:string :required [:length 6 10] "Password is required"]
+   :confirm  [:string [:* = :password] "Password confirmation doesn't match"]})
+
+
+(check cross-model {:password "abc123" :confirm "x"})
+=> {:errors {:confirm "Password confirmation doesn't match"}
+    :raw    {:password "abc123" :confirm "x"}
+    :values {:confirm "x" :password "abc123"}}
 
 
 
 
 
-; ## Localization
+; ## Localization of error messages
 
-; Define a model with localized error messages.
-; A :default message is required and used for fallback
-
+; Define a model with localized error messages,
+; a :default message is required and used for fallback
 (defm localized-model
   {:a [:string :required {:default "error"
                           :de-de "Fehler"}]})
@@ -187,45 +269,10 @@
 
 
 
-; Custom conditions are functions with 3 parameters.
-; * note entire parsed map and culture-code are passed for use if needed.
-(defn my-condition [parsed-map parsed-value culture-code]
-  (cond (= parsed-value "good")    true
-        (= parsed-value "notgood") false
-        :default                   (str "Error " culture-code)))
-
-; define a model that uses the custom condtion
-(defm localized-custom-model
-  {:a [:string my-condition {:default "error"
-                             :de-de "Fehler"}]})
-
-; if your custom condition returns a string, it's considered
-; a failure and the string is used as the error message
-(check localized-custom-model {:a "bad"} :de-de)
-
-=> {:errors {:a "Error :de-de"}
-    :raw    {:a "bad"}
-    :values {:a "bad"}}
-
-
-; if your custom condition returns anything besides true or string,
-; it's considered a failure and uses standard error message
-(check localized-custom-model {:a "notgood"} :de-de)
-
-=> {:errors {:a "Fehler"}
-    :raw    {:a "notgood"}
-    :values {:a "notgood"}}
-
-
-; if your custom condition returns true, it's considered valid.
-(check localized-custom-model {:a "good"} :de-de)
-
-=> {:raw    {:a "good"}
-    :values {:a "good"}}
 
 
 
-; Datetime Localization
+; ## Localization of datetime formats
 
 ; define a model with localized datetime formats and error messages
 (defm localized-datetime-model
@@ -263,6 +310,55 @@
 
 => {:raw    {:start "2014-7-28"}
     :values {:start #<DateTime 2014-07-28T00:00:00.000Z>}}
+
+
+
+
+
+
+
+
+
+
+
+
+; ## Localization of custom conditions
+
+; Custom conditions are functions with 3 parameters.
+; * note entire parsed map and culture-code are passed for use if needed.
+(defn my-condition [parsed-map parsed-value culture-code]
+  (cond (= parsed-value "good")    true
+        (= parsed-value "notgood") false
+        :default                   (str "Error " culture-code)))
+
+; define a model that uses the custom condtion
+(defm localized-custom-model
+  {:a [:string my-condition {:default "error"
+                             :de-de "Fehler"}]})
+
+; if your custom condition returns a string, it's considered
+; a failure and the string is used as the error message
+(check localized-custom-model {:a "bad"} :de-de)
+
+=> {:errors {:a "Error :de-de"}
+    :raw    {:a "bad"}
+    :values {:a "bad"}}
+
+
+; if your custom condition returns anything besides true or string,
+; it's considered a failure and uses standard error message
+(check localized-custom-model {:a "notgood"} :de-de)
+
+=> {:errors {:a "Fehler"}
+    :raw    {:a "notgood"}
+    :values {:a "notgood"}}
+
+
+; if your custom condition returns true, it's considered valid.
+(check localized-custom-model {:a "good"} :de-de)
+
+=> {:raw    {:a "good"}
+    :values {:a "good"}}
 
 
 
