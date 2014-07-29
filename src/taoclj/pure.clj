@@ -182,10 +182,13 @@
 ;;        )
 
 
-;; (defmacro defm
-;;   "A simple way to define a pure model"
-;;   [name & model]
-;;   `(def ~name (compile-model ~@model)))
+
+
+
+(defmacro defm
+  "A simple way to define a pure model"
+  [name & model]
+  `(def ~name (compile-model ~@model)))
 
 
 
