@@ -242,6 +242,14 @@
 
 
 
+(check cross-model {:password "abc123" :confirm "abc123"})
+
+=> {:raw    {:password "abc123" :confirm "abc123"}
+    :values {:password "abc123" :confirm "abc123"}}
+
+
+
+
 
 
 ; ## Localization of error messages

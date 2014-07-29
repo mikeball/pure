@@ -209,6 +209,7 @@ Rules are simply a sequence with the first element being the type such as :strin
 
 ; age must be a valid integer
 (check int-model {:age "x"})
+
 => {:errors {:age "Age is required and must between 21 and 130"}
     :raw    {:age "x"}
     :values {:age nil}}
@@ -331,9 +332,16 @@ Rules are simply a sequence with the first element being the type such as :strin
 
 
 (check cross-model {:password "abc123" :confirm "x"})
+
 => {:errors {:confirm "Password confirmation doesn't match"}
     :raw    {:password "abc123" :confirm "x"}
     :values {:confirm "x" :password "abc123"}}
+
+
+(check cross-model {:password "abc123" :confirm "abc123"})
+
+=> {:raw    {:password "abc123" :confirm "abc123"}
+    :values {:password "abc123" :confirm "abc123"}}
 
 ```
 
