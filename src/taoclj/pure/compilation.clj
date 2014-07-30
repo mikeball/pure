@@ -1,5 +1,6 @@
 (ns taoclj.pure.compilation
-  (:require [taoclj.pure.util :refer [in?]]
+  (:require [clj-time.core :as t]
+            [taoclj.pure.util :refer [in?]]
             [taoclj.pure.parsers :as parsers]
             [taoclj.pure.compilation.validation :as v]))
 
@@ -44,12 +45,21 @@
         (not (or short long))))))
 
 
-(defn compile-cross-key-condition [condition]
-  (fn [values value _]
-    (let [f    (second condition)
-            ks   (drop 2 condition)
-            xval (get-in values ks) ]
-        (f value xval))))
+
+;; (defn compile-string-matches-condition [condition]
+;;   (fn [values value _]
+;;     (let [ks   (drop 1 condition)
+;;           xval (get-in values ks) ]
+;;       (= value xval))))
+
+
+;; ((compile-string-matches-condition [:matches :street :address])
+;;  {:street {:address "123 Oak"}}
+;;  "123 Oak"
+;;  nil
+;;  )
+
+
 
 
 (defn compile-int-range-condition [min max]
@@ -60,10 +70,68 @@
       (not (or under over))))))
 
 
+
+(defn compile-datetime-before-condition [condition]
+
+  (fn [values time1 _]
+    (let [ks     (drop 1 condition)
+          time2  (get-in values ks) ]
+
+
+      (cond (nil? time1) false
+            (nil? time2) false
+            :else        (t/before? time1 time2)
+            )
+
+      )))
+
+(defn compile-datetime-after-condition [condition]
+
+  (fn [values time1 _]
+    (let [ks     (drop 1 condition)
+          time2  (get-in values ks) ]
+
+
+      (cond (nil? time1) false
+            (nil? time2) false
+            :else        (t/after? time1 time2)
+            )
+
+      ))
+  )
+
+
+
+;; ((compile-datetime-after-condition [:after :start])
+;;  {:start (t/date-time 2014 6)}
+;;  (t/date-time 2014 7)
+;;  nil
+;;  )
+
+;; (t/after? (t/date-time 2014 8) (t/date-time 2014 7))
+
+
+;; (t/after? nil (t/date-time 2014 7))
+
+
+
+
 (defn compile-regex-condition [rx]
   (fn [_ value _]
     (cond (nil? value)  true
           :else         (not (nil? (re-find rx value))))))
+
+
+(defn compile-cross-key-fn-condition [condition]
+  (fn [values value _]
+    (let [f         (first condition)
+          ks        (drop 1 condition)
+          cross-val (get-in values ks) ]
+      (f value cross-val))))
+
+
+
+
 
 
 (defn compile-condition [path datatype condition]
@@ -73,7 +141,8 @@
 
 
         (vector? condition)
-        (let [name (first condition)]
+        (let [f    (first condition)
+              name (if (fn? f) :fn f)]
           (case [datatype name]
 
             [:string :length]
@@ -82,12 +151,17 @@
             [:int :range]
             (compile-int-range-condition (second condition) (nth condition 2))
 
+            [:string :fn]
+            (compile-cross-key-fn-condition condition)
 
-            [:string :*]
-            (compile-cross-key-condition condition)
+            [:int :fn]
+            (compile-cross-key-fn-condition condition)
 
-            [:int :*]
-            (compile-cross-key-condition condition)
+            [:datetime :before]
+            (compile-datetime-before-condition condition)
+
+            [:datetime :after]
+            (compile-datetime-after-condition condition)
 
 
             :else

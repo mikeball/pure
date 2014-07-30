@@ -41,9 +41,16 @@
         (if (= (count condition) 3) true
           (error path "Invalid :length condition"))
 
+
         ; cross key validation
-        (and (vector? condition) (= (first condition) :*))
+        (and (vector? condition) (fn? (first condition)))
         true ; todo add more structural validation for cross key conditions
+
+
+;;         ; cross key validation
+;;         (and (vector? condition) (= (first condition) :matches))
+;;         true ; todo add more structural validation for cross key conditions
+
 
         :else
         (error path (str "Invalid condition: " condition))))
@@ -59,7 +66,7 @@
 
 
         ; cross key validation
-        (and (vector? condition) (= (first condition) :*))
+        (and (vector? condition) (fn? (first condition)))
         true ; todo add more structural validation for cross key conditions
 
 
@@ -72,13 +79,21 @@
   (cond (and (keyword? condition) (in? [:required] condition))
         true
 
-;;         (and (vector? condition) (= (first condition) :range))
-;;         (if (= (count condition) 3) true
-;;           (error path "Invalid :range condition"))
+
+        ; cross key condition
+        (and (vector? condition) (in? [:before :after] (first condition)))
+        (if (>= (count condition) 2) true
+             (error path (str "Invalid condition: " condition)))
 
 
         :else
         (error path (str "Invalid condition: " condition))))
+
+
+
+
+; (validate-datetime-condition [:b] [:after :a])
+
 
 
 (defn validate-email-condition [path condition]

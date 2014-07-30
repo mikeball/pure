@@ -241,65 +241,82 @@
 
 
 (deftest string-cross-key-conditions-are-enforced
-
   (are [condition a-val b-val expected]
 
        (= expected
-       (:errors
-        (pure/check
-         (compilation/compile-model
-          {:a [:string "e*a"]
-           :b [:string condition "e*b"]})
+          (:errors
+           (pure/check
+            (compilation/compile-model
+             {:a [:string "e*a"]
+              :b [:string condition "e*b"]})
 
-         {:a a-val :b b-val} )))
+            {:a a-val :b b-val} )))
 
-       [:* = :a] "x" ""  {:b "e*b"}
-       [:* = :a] "x" "y" {:b "e*b"}
-       [:* = :a] "x" "x" nil
+       [= :a]  "x"  ""   {:b "e*b"}
+       [= :a]  "x"  "y"  {:b "e*b"}
+       [= :a]  "x"  "x"  nil
 
-
-       )
-
-  )
-
+       ))
 
 
 (deftest int-cross-key-conditions-are-enforced
-
   (are [condition a-val b-val expected]
 
        (= expected
-       (:errors
-        (pure/check
-         (compilation/compile-model
-          {:a [:int "e*a"]
-           :b [:int condition "e*b"]})
+          (:errors
+           (pure/check
+            (compilation/compile-model
+             {:a [:int "e*a"]
+              :b [:int condition "e*b"]})
 
-         {:a a-val :b b-val} )))
+            {:a a-val :b b-val} )))
+
+       [= :a]  "1"  ""   {:b "e*b"}
+       [= :a]  "1"  "2"  {:b "e*b"}
+       [= :a]  "1"  "1"  nil
+
+       [> :a]  "1"  "1"  {:b "e*b"}
+       [> :a]  "1"  "2"  nil
+
+       ))
 
 
-       [:* = :a] "1" "2" {:b "e*b"}
-       [:* = :a] "1" "1" nil
 
-       )
-  )
+
+
+(deftest datetime-cross-key-conditions-are-enforced
+  (are [condition a-val b-val expected]
+
+       (= expected
+          (:errors
+           (pure/check
+            (compilation/compile-model
+             {:a [:datetime "MM/dd/yyyy" "e*a"]
+              :b [:datetime "MM/dd/yyyy" condition "e*b"]})
+
+            {:a a-val :b b-val} )))
+
+       [:after :a]  "7/28/2014"  "x"          {:b "e*b"}
+       [:after :a]  "7/28/2014"  "7/27/2014"  {:b "e*b"}
+       [:after :a]  "7/28/2014"  "7/29/2014"  nil
+
+       [:before :a]  "7/28/2014"  "x"          {:b "e*b"}
+       [:before :a]  "7/28/2014"  "7/29/2014"  {:b "e*b"}
+       [:before :a]  "7/28/2014"  "7/27/2014"  nil
+
+       ))
+
+
+
 
 
 
 ;; (pure/check
-;;          (compilation/compile-model
-;;           {:a [:string "e*a"]
-;;            :b [:string [:* = :a] "e*b"]})
-
-;;          {:a "x" :b ""} )
-
-
-;; (pure/check
-;;  (compilation/compile-model  {:password [:string "pe*"]
-;;                               :confirm  [:string [:* = :password] "ce*"]}
+;;  (compilation/compile-model  {:start [:datetime "MM/dd/yyyy"               "e*a"]
+;;                               :end   [:datetime "MM/dd/yyyy" [:* > :start] "e*a"]}
 ;;   )
-;;        {:password "a"
-;;         :confirm "b"}
+;;        {:start  "7/28/2014"
+;;         :end    "7/27/2014"}
 ;;        )
 
 
