@@ -336,6 +336,19 @@
 
 
 
+(deftest parser-helpers-work
+
+  (is (= 123 (pure/parse-int "123")))
+
+  )
+
+
+(pure/parse-int "122")
+
+
+
+
+
 
 
 

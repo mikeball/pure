@@ -4,7 +4,7 @@
 
 
 
-(defn parse-raw-value
+(defn- parse-raw-value
   "Parses a single raw value.
 
   (parse-raw-value compiled-model [:age] {:age \"21\"})
@@ -24,7 +24,7 @@
 ;;                  :default)
 
 
-(defn parse-raw
+(defn- parse-raw
   "Parses all raw values in a raw data map.
 
   (parse-raw '([:name])
@@ -36,8 +36,8 @@
   (into {} (map (fn [path] (parse-raw-value model path raw culture))
                 parse-keys)))
 
-;; (require '[taoclj.pure.parsers :as parsers])
 
+;; (require '[taoclj.pure.parsers :as parsers])
 ;; (parse-raw '([:birth])
 ;;             {[:birth] {:parser parsers/parse-datetime
 ;;                        :parser-opts {:default "MM/dd/yyyy"}}}
@@ -47,7 +47,7 @@
 
 
 
-(defn extract-values
+(defn- extract-values
   "Pulls parsed values and places them into a origial map structure.
 
   (extract-values {[:name] {:ok true :val \"bob\"}})
@@ -61,7 +61,7 @@
 
 
 
-(defn check-field-conditions
+(defn- check-field-conditions
   [field-path culture conditions value values]
 
   (first (filter #(not (nil? %))
@@ -80,23 +80,17 @@
 ;;                         :en-us
 ;;                         [required-ok?
 ;;                          ; string-length-ok?
-
 ;; ;;                          (fn [value culture]
 ;; ;;                            (if-not (= value "bob") true
 ;; ;;                              (str "Sorry taken " culture)))
-
 ;;                          ]
-
 ;;                         nil)
 
 
 
 
 
-
-
-
-(defn get-errors
+(defn- get-errors
   "Builds final error message map from list of failures.
 
   (get-errors
@@ -133,46 +127,28 @@
 
 
 (defn check
-
   ([model raw] (check model raw :default))
-
   ([model raw culture]
-
   (let [model-keys (keys model)
-
         parse-results  (parse-raw model-keys model raw culture)
-
         values  (extract-values parse-results)
-
         parsed-ok     (filter #(true? (get-in parse-results [% :ok]))
                               model-keys )
-
         parse-failures   (filter #(false? (get-in parse-results [% :ok]))
                                  model-keys )
-
         condition-failures (filter #(not (nil? %))
                                    (for [path parsed-ok]
                                      (check-field-conditions path
                                                              culture
                                                              (get-in model [path :conditions])
                                                              (get-in parse-results [path :val])
-                                                             values)
-                                     ))
-
+                                                             values)))
         all-failures (concat parse-failures condition-failures)
-
-        result        {:raw raw :values values}
-        ]
-
+        result        {:raw raw :values values}]
 
     (if (empty? all-failures) result
-
       (assoc result
-        :errors (get-errors model culture all-failures))
-      ))
-
-   ))
-
+        :errors (get-errors model culture all-failures))))))
 
 ;; (check
 ;;  (compilation/compile-model  {:password [:string "pe*"]
@@ -194,23 +170,18 @@
 
 
 
-;; (check (compilation/get-compiled {:name [:string "e*"]})
-;;        {:name " bob "}
-;;        )
+(defn parse-int
+  "Helper function to parse strings into an integer
+
+  (parse-int \"123\")
+    => 123
+  "
+  [raw]
+  (try (Long. (str/trim raw))
+       (catch Exception e nil)))
 
 
-;; (check {[:name] {:parser parsing/parse-string :error {:en-us "Error"}}}
-;;        :en-us
-;;        {:name "2"})
 
-
-
-;; (check compiled-model
-;;        :default
-;;        {:name "bob"
-;;          :age "21"
-;;          :address {:street " 123 Oak "}}
-;;         )
 
 
 
