@@ -48,6 +48,7 @@
 
 
 
+
 ; ## String Validations
 
 ; a model for a simple string
@@ -232,10 +233,11 @@
 
 (defm cross-model
   {:password [:string :required [:length 6 10] "Password is required"]
-   :confirm  [:string [:* = :password] "Password confirmation doesn't match"]})
+   :confirm  [:string [= :password] "Password confirmation doesn't match"]})
 
 
 (check cross-model {:password "abc123" :confirm "x"})
+
 => {:errors {:confirm "Password confirmation doesn't match"}
     :raw    {:password "abc123" :confirm "x"}
     :values {:confirm "x" :password "abc123"}}
@@ -246,6 +248,70 @@
 
 => {:raw    {:password "abc123" :confirm "abc123"}
     :values {:password "abc123" :confirm "abc123"}}
+
+
+
+(defm int-cross-model
+  {:low  [:int :required   "Low is required"]
+   :high [:int [> :low] "High must be greater than low"]})
+
+
+(check int-cross-model {:low "2" :high "1"})
+=> {:errors {:high "High must be greater than low"}
+    :raw    {:low "2" :high "1"}
+    :values {:low 2   :high 1 }}
+
+
+(check int-cross-model {:low "2" :high "3"})
+
+=> {:raw    {:low "2" :high "3"}
+    :values {:low 2   :high 3}}
+
+
+
+
+; Datetime before and after conditions
+(defm cross-datetime-model
+  {:start [:datetime "MM/dd/yyyy" "Start must be a valid date"]
+   :end   [:datetime "MM/dd/yyyy" [:after :start] "End must be after start"]})
+
+
+(check cross-datetime-model {:start "7/28/2014" :end "7/27/2014"})
+
+=> {:errors {:end "End must be after start"}
+    :raw    {:start "7/28/2014", :end "7/27/2014"}
+    :values {:start #<DateTime 2014-07-28T00:00:00.000Z> :end #<DateTime 2014-07-27T00:00:00.000Z>}}
+
+
+(check cross-datetime-model {:start "7/28/2014" :end "7/29/2014"})
+=> {:raw    {:start "7/28/2014", :end "7/29/2014"}
+    :values {:start #<DateTime 2014-07-28T00:00:00.000Z> :end #<DateTime 2014-07-29T00:00:00.000Z>}}
+
+
+
+; Referencing nested fields
+(defm nested-cross-model
+  {:address {:street1 [:string :required "Street address is required"] }
+
+   :billing {:street2 [:string [= :address :street1] "Billing address must match"]}})
+
+(check nested-cross-model
+       {:address {:street1 "123 Oak"}
+        :billing {:street2 "x"}})
+=> {:errors {:billing {:street2 "Billing address must match"}}
+    :raw    {:address {:street1 "123 Oak"} :billing {:street2 "x"}}
+    :values {:address {:street1 "123 Oak"} :billing {:street2 "x"}}}
+
+
+(check nested-cross-model
+       {:address {:street1 "123 Oak"}
+        :billing {:street2 "123 Oak"}})
+
+=> {:raw    {:address {:street1 "123 Oak"} :billing {:street2 "123 Oak"}}
+    :values {:address {:street1 "123 Oak"} :billing {:street2 "123 Oak"}}}
+
+
+
 
 
 
@@ -372,7 +438,28 @@
 
 
 
+; ## Models allow string keys
 
+(defm stringkey-model
+  {"address" {"street" [:string :required "Street address is required"]}
+   "age" [:int "Age must be an integer"]})
+
+
+; a check with invalid data
+(check stringkey-model {"address" {"street" ""}
+                        "age" "x"})
+
+=> {:errors {"address" {"street" "Street address is required"}, "age" "Age must be an integer"}
+    :raw {"address" {"street" ""}, "age" "x"}
+    :values {"age" nil, "address" {"street" nil}}}
+
+
+; a check with valid data
+(check stringkey-model {"address" {"street" "123 Oak"}
+                        "age" "21"})
+
+=> {:raw {"address" {"street" "123 Oak"}, "age" "21"}
+    :values {"age" 21, "address" {"street" "123 Oak"}}}
 
 
 

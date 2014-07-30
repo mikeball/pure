@@ -76,6 +76,8 @@ Rules are simply a sequence with the first element being the type such as :strin
 [:length 2 5]     ; must be between 2 and 5 characters long
 #"x"              ; must match the regular expression
 
+
+
 ; :int conditions
 :required         ; you must supply a valid integer
 [:range 2 nil]    ; must be an integer 2 or greater
@@ -110,7 +112,6 @@ Rules are simply a sequence with the first element being the type such as :strin
 
 
 ## Compilation of models
-
 ```clojure
 
 ; the simplest way to compile a model is by using the defm macro
@@ -125,7 +126,6 @@ Rules are simply a sequence with the first element being the type such as :strin
 
 
 ```
-
 
 
 
@@ -328,7 +328,7 @@ Rules are simply a sequence with the first element being the type such as :strin
 
 (defm cross-model
   {:password [:string :required [:length 6 10] "Password is required"]
-   :confirm  [:string [:* = :password] "Password confirmation doesn't match"]})
+   :confirm  [:string [= :password] "Password confirmation doesn't match"]})
 
 
 (check cross-model {:password "abc123" :confirm "x"})
@@ -338,10 +338,74 @@ Rules are simply a sequence with the first element being the type such as :strin
     :values {:confirm "x" :password "abc123"}}
 
 
+
 (check cross-model {:password "abc123" :confirm "abc123"})
 
 => {:raw    {:password "abc123" :confirm "abc123"}
     :values {:password "abc123" :confirm "abc123"}}
+
+
+
+(defm int-cross-model
+  {:low  [:int :required   "Low is required"]
+   :high [:int [> :low] "High must be greater than low"]})
+
+
+(check int-cross-model {:low "2" :high "1"})
+=> {:errors {:high "High must be greater than low"}
+    :raw    {:low "2" :high "1"}
+    :values {:low 2   :high 1 }}
+
+
+(check int-cross-model {:low "2" :high "3"})
+
+=> {:raw    {:low "2" :high "3"}
+    :values {:low 2   :high 3}}
+
+
+
+
+; Datetime before and after conditions
+(defm cross-datetime-model
+  {:start [:datetime "MM/dd/yyyy" "Start must be a valid date"]
+   :end   [:datetime "MM/dd/yyyy" [:after :start] "End must be after start"]})
+
+
+(check cross-datetime-model {:start "7/28/2014" :end "7/27/2014"})
+
+=> {:errors {:end "End must be after start"}
+    :raw    {:start "7/28/2014", :end "7/27/2014"}
+    :values {:start #<DateTime 2014-07-28T00:00:00.000Z> :end #<DateTime 2014-07-27T00:00:00.000Z>}}
+
+
+(check cross-datetime-model {:start "7/28/2014" :end "7/29/2014"})
+=> {:raw    {:start "7/28/2014", :end "7/29/2014"}
+    :values {:start #<DateTime 2014-07-28T00:00:00.000Z> :end #<DateTime 2014-07-29T00:00:00.000Z>}}
+
+
+
+; Referencing nested fields
+(defm nested-cross-model
+  {:address {:street1 [:string :required "Street address is required"] }
+
+   :billing {:street2 [:string [= :address :street1] "Billing address must match"]}})
+
+(check nested-cross-model
+       {:address {:street1 "123 Oak"}
+        :billing {:street2 "x"}})
+=> {:errors {:billing {:street2 "Billing address must match"}}
+    :raw    {:address {:street1 "123 Oak"} :billing {:street2 "x"}}
+    :values {:address {:street1 "123 Oak"} :billing {:street2 "x"}}}
+
+
+(check nested-cross-model
+       {:address {:street1 "123 Oak"}
+        :billing {:street2 "123 Oak"}})
+
+=> {:raw    {:address {:street1 "123 Oak"} :billing {:street2 "123 Oak"}}
+    :values {:address {:street1 "123 Oak"} :billing {:street2 "123 Oak"}}}
+
+
 
 ```
 
@@ -459,18 +523,47 @@ Rules are simply a sequence with the first element being the type such as :strin
 ```
 
 
+## Model Strings Keys
+```clojure
+(defm stringkey-model
+  {"address" {"street" [:string :required "Street address is required"]}
+   "age" [:int "Age must be an integer"]})
+
+
+; a check with invalid data
+(check stringkey-model {"address" {"street" ""}
+                        "age" "x"})
+
+=> {:errors {"address" {"street" "Street address is required"}, "age" "Age must be an integer"}
+    :raw {"address" {"street" ""}, "age" "x"}
+    :values {"age" nil, "address" {"street" nil}}}
+
+
+; a check with valid data
+(check stringkey-model {"address" {"street" "123 Oak"}
+                        "age" "21"})
+
+=> {:raw {"address" {"street" "123 Oak"}, "age" "21"}
+    :values {"age" 21, "address" {"street" "123 Oak"}}}
+
+```
+
+
+
 
 
 ## TODO / Potential Features
 - date range condition
-- model level checks
-- collection validation
+- perhaps datetimes should not be based on clj-time?
+- test/confirm string based keys
+- model/top level checks
+- collection validations
 - phone number type
 - postal code type
 - ISO country code type
 - US state type
 - condition exists in set/list [:oneof :a :b :c "err"]
-
+- handle custom check for username taken, but not used by current user
 
 
 

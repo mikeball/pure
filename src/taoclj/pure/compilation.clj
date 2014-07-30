@@ -72,48 +72,20 @@
 
 
 (defn compile-datetime-before-condition [condition]
-
   (fn [values time1 _]
     (let [ks     (drop 1 condition)
           time2  (get-in values ks) ]
-
-
       (cond (nil? time1) false
             (nil? time2) false
-            :else        (t/before? time1 time2)
-            )
-
-      )))
+            :else        (t/before? time1 time2)))))
 
 (defn compile-datetime-after-condition [condition]
-
   (fn [values time1 _]
     (let [ks     (drop 1 condition)
           time2  (get-in values ks) ]
-
-
       (cond (nil? time1) false
             (nil? time2) false
-            :else        (t/after? time1 time2)
-            )
-
-      ))
-  )
-
-
-
-;; ((compile-datetime-after-condition [:after :start])
-;;  {:start (t/date-time 2014 6)}
-;;  (t/date-time 2014 7)
-;;  nil
-;;  )
-
-;; (t/after? (t/date-time 2014 8) (t/date-time 2014 7))
-
-
-;; (t/after? nil (t/date-time 2014 7))
-
-
+            :else        (t/after? time1 time2)))))
 
 
 (defn compile-regex-condition [rx]
