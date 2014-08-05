@@ -2,7 +2,7 @@
 
 Pure is a validation, and parameter parsing library for clojure.
 
-One of the more tedious parts of building applications is validating and parsing string based parameters into the values your application needs such as integers and datetimes. Pure allows you to specify a validation model, then check data against the rules AND have get access to the parsed values once validation passes.
+One of the more tedious parts of building applications is validating and parsing string based parameters into the values your application needs such as integers and datetimes. Pure allows you to specify a validation model, then check data against the rules AND make use of the parsed values.
 
 
 ###Features:
@@ -10,7 +10,7 @@ One of the more tedious parts of building applications is validating and parsing
 * Nested field validations
 * Cross field validations
 * First class localization
-* Handles custom validations
+* Custom validations
 
 
 
@@ -523,7 +523,7 @@ Rules are simply a sequence with the first element being the type such as :strin
 ```
 
 
-## Model Strings Keys
+## Model string keys
 ```clojure
 (defm stringkey-model
   {"address" {"street" [:string :required "Street address is required"]}
@@ -553,15 +553,12 @@ Rules are simply a sequence with the first element being the type such as :strin
 
 
 ## TODO / Potential Features
-- date range condition
-- perhaps datetimes should not be based on clj-time?
-- test/confirm string based keys
-- model/top level checks
-- collection validations
 - phone number type
 - postal code type
-- ISO country code type
-- US state type
+- US state type... outside US?
+- ISO country code type 2 Character
+- collection validations
+- top level fn checks?
 - condition exists in set/list [:oneof :a :b :c "err"]
 - handle custom check for username taken, but not used by current user
 

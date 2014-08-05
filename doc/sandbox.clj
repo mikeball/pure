@@ -1,5 +1,4 @@
 
-
 ; what syntax/methods for top level validations
 
 {:*        [(fn [values culture]
