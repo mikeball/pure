@@ -13,12 +13,20 @@ One of the more tedious parts of building applications is validating and parsing
 * Custom validations
 
 
-
-
 Status : *experimental with major changes likely.*
 
+
+## Installation
 ```clojure
-[org.taoclj/pure "0.0.3"]
+
+; pure is not yet deployed to clojars, but can easily be installed like this
+git clone https://github.com/mikeball/pure.git
+cd pure
+lein install
+
+; then add the following to your project.clj dependencies
+[org.taoclj/pure "0.0.3-SNAPSHOT"]
+
 ```
 
 
@@ -553,6 +561,7 @@ Rules are simply a sequence with the first element being the type such as :strin
 
 
 ## TODO / Potential Features
+- boolean type
 - phone number type
 - postal code type
 - US state type... outside US?
@@ -561,8 +570,9 @@ Rules are simply a sequence with the first element being the type such as :strin
 - top level fn checks?
 - condition exists in set/list [:oneof :a :b :c "err"]
 - handle custom check for username taken, but not used by current user
-
-
+- should we allow default value for a field?
+- timeofday, dayofyear, dayofweek types?
+- transforms, such as upper/lower/proper case?
 
 
 
