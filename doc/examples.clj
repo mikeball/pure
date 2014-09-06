@@ -151,25 +151,28 @@
 
 ; ## Datetime Validation
 
-; let's define a simple model with a datetime
-; datetimes require a date format that directly follows the datatype in the rule
+; Define a simple model with a datetime.
+; Datetimes require a date format string that directly follows the datatype in the rule
+; and also requires a time component in the format string. The string, if valid, is parsed into
+; a java.time.LocalDateTime object.
 (defm dt-model
-  {:start [:datetime "MM/dd/yyyy" "Start date required in mm/dd/yyyy format"]})
+  {:start [:datetime "MM/dd/yyyy HH:mm" "Start date required in MM/dd/yyyy HH:mm format"]})
 
 
 ; an invalid date string triggers an error
 (check dt-model {:start "x"})
 
-=> {:errors {:start "Start date required in mm/dd/yyyy format"}
+=> {:errors {:start "Start date required in MM/dd/yyyy HH:mm format"}
     :raw    {:start "x"}
     :values {:start nil}}
 
 
 ; valid date returns parsed DateTime object
-(check dt-model {:start "7/28/2014"})
+(check dt-model {:start "07/28/2014 10:11"})
 
-=> {:raw    {:start "7/28/2014"}
-    :values {:start #<DateTime 2014-07-28T00:00:00.000Z>}}
+=> {:raw    {:start "07/28/2014 10:11"}
+    :values {:start #<LocalDateTime 2014-07-28T10:11>}}
+
 
 
 ; ** please see localization section for how to handle localized date formats
@@ -271,22 +274,25 @@
 
 
 ; Datetime before and after conditions
+
 (defm cross-datetime-model
-  {:start [:datetime "MM/dd/yyyy" "Start must be a valid date"]
-   :end   [:datetime "MM/dd/yyyy" [:after :start] "End must be after start"]})
+  {:start [:datetime "MM/dd/yyyy HH:mm" "Start must be a valid date"]
+   :end   [:datetime "MM/dd/yyyy HH:mm" [:after :start] "End must be after start"]})
 
 
-(check cross-datetime-model {:start "7/28/2014" :end "7/27/2014"})
+(check cross-datetime-model {:start "07/28/2014 10:11" :end "07/27/2014 10:11"})
 
 => {:errors {:end "End must be after start"}
-    :raw    {:start "7/28/2014", :end "7/27/2014"}
-    :values {:start #<DateTime 2014-07-28T00:00:00.000Z> :end #<DateTime 2014-07-27T00:00:00.000Z>}}
+    :raw    {:start "07/28/2014 10:11" :end "07/27/2014 10:11"}
+    :values {:end #<LocalDateTime 2014-07-27T10:11> :start #<LocalDateTime 2014-07-28T10:11>}}
 
 
-(check cross-datetime-model {:start "7/28/2014" :end "7/29/2014"})
-=> {:raw    {:start "7/28/2014", :end "7/29/2014"}
-    :values {:start #<DateTime 2014-07-28T00:00:00.000Z> :end #<DateTime 2014-07-29T00:00:00.000Z>}}
 
+
+(check cross-datetime-model {:start "07/28/2014 10:11" :end "07/29/2014 10:11"})
+
+=> {:raw    {:start "07/28/2014 10:11", :end "07/29/2014 10:11"}
+    :values {:end #<LocalDateTime 2014-07-29T10:11>, :start #<LocalDateTime 2014-07-28T10:11>}}
 
 
 ; Referencing nested fields
@@ -351,41 +357,42 @@
 ; define a model with localized datetime formats and error messages
 (defm localized-datetime-model
   {:start [:datetime
-           {:default "MM/dd/yyyy" :de-de "yyyy-MM-dd"}
-           {:default "Start must be a valid date - mm/dd/yyyy"
-            :de-de   "Starten muss ein gültiges Datum sein - yyyy-mm-dd"}]})
+           {:default "MM/dd/yyyy HH:mm" :de-de "yyyy-MM-dd HH:mm"}
+           {:default "Start must be a valid date - MM/dd/yyyy HH:mm"
+            :de-de   "Starten muss ein gültiges Datum sein - yyyy-MM-dd HH:mm"}]})
 
 
 ; an invalid date using default culture fallbacks
 (check localized-datetime-model {:start "x"})
 
-=> {:errors {:start "Start must be a valid date - mm/dd/yyyy"}
+=> {:errors {:start "Start must be a valid date - MM/dd/yyyy HH:mm"}
     :raw    {:start "x"}
     :values {:start nil}}
 
 
 ; a valid date using default culture
-(check localized-datetime-model {:start "7/28/2014"})
+(check localized-datetime-model {:start "07/28/2014 10:11"})
 
-=> {:raw {:start "7/28/2014"}
-    :values {:start #<DateTime 2014-07-28T00:00:00.000Z>}}
+=> {:raw    {:start "07/28/2014 10:11"}
+    :values {:start #<LocalDateTime 2014-07-28T10:11>}}
+
 
 
 ; an invalid date using specific culture code
 (check localized-datetime-model {:start "x"} :de-de)
 
-=> {:errors {:start "Starten muss ein gültiges Datum sein - yyyy-mm-dd"}
+=> {:errors {:start "Starten muss ein gültiges Datum sein - yyyy-MM-dd HH:mm"}
     :raw    {:start "x"}
     :values {:start nil}}
 
 
+
+
 ; a valid date using specific culture
-(check localized-datetime-model {:start "2014-7-28"} :de-de)
+(check localized-datetime-model {:start "2014-07-28 10:11"} :de-de)
 
-=> {:raw    {:start "2014-7-28"}
-    :values {:start #<DateTime 2014-07-28T00:00:00.000Z>}}
-
-
+=> {:raw    {:start "2014-07-28 10:11"}
+    :values {:start #<LocalDateTime 2014-07-28T10:11>}}
 
 
 
