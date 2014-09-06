@@ -1,8 +1,12 @@
 (ns taoclj.pure-tests
   (:require [taoclj.pure :as pure]
             [taoclj.pure.compilation :as compilation]
-            [clojure.test :refer [deftest is are]]
-            [clj-time.core :as t]))
+            [clojure.test :refer [deftest is are]])
+  (:import [java.time LocalDate LocalDateTime]
+           ; [java.time.format DateTimeFormatter]
+           ))
+
+
 
 
 
@@ -100,16 +104,19 @@
   (are [rule raw error value]
        (test-error-and-value rule raw :default error value)
 
-       [:datetime "MM/dd/yyyy" "e*"]   nil          nil    nil
-       [:datetime "MM/dd/yyyy" "e*"]   ""           nil    nil
-       [:datetime "MM/dd/yyyy" "e*"]   1            "e*"   nil
-       [:datetime "MM/dd/yyyy" "e*"]   "7/14/2014"  nil    (t/date-time 2014 7 14)
+       [:datetime "yyyy-MM-dd HH:mm:ss" "e*"]   nil          nil    nil
+       [:datetime "yyyy-MM-dd HH:mm:ss" "e*"]   ""           nil    nil
+       [:datetime "yyyy-MM-dd HH:mm:ss" "e*"]   1            "e*"   nil
+
+       [:datetime "yyyy-MM-dd HH:mm:ss" "e*"]
+         "2014-07-14 10:11:12"  nil    (LocalDateTime/of 2014 7 14 10 11 12)
 
        [:datetime
-        "MM/dd/yyyy" :required "e*"]   nil          "e*"   nil
+        "yyyy-MM-dd HH:mm:ss" :required "e*"]   nil          "e*"   nil
 
        ))
 
+; (LocalDateTime/of 2014 7 14 10 11 12)
 
 
 
@@ -179,13 +186,14 @@
   (are [rule raw culture error value]
        (test-error-and-value rule raw culture error value)
 
-       [:datetime {:default "MM/dd/yyyy"} "e*"]
-       "7/14/2014" :default  nil   (t/date-time 2014 7 14)
+       [:datetime {:default "MM/dd/yyyy HH:mm"} "e*"]
+         "07/14/2014 10:11" :default  nil   (LocalDateTime/of 2014 7 14 10 11)
 
-       [:datetime {:de-de "yyyy-MM-dd"} "e*"]
-       "2014-07-14" :de-de nil   (t/date-time 2014 7 14)
+       [:datetime {:de-de "yyyy-MM-dd HH:mm"} "e*"]
+         "2014-07-14 10:11" :de-de nil   (LocalDateTime/of 2014 7 14 10 11)
 
        ))
+
 
 
 (deftest custom-conditions-are-passed-culture-and-value
@@ -291,22 +299,29 @@
           (:errors
            (pure/check
             (compilation/compile-model
-             {:a [:datetime "MM/dd/yyyy" "e*a"]
-              :b [:datetime "MM/dd/yyyy" condition "e*b"]})
+             {:a [:datetime "M/dd/yyyy HH:mm" "e*a"]
+              :b [:datetime "M/dd/yyyy HH:mm" condition "e*b"]})
 
             {:a a-val :b b-val} )))
 
-       [:after :a]  "7/28/2014"  "x"          {:b "e*b"}
-       [:after :a]  "7/28/2014"  "7/27/2014"  {:b "e*b"}
-       [:after :a]  "7/28/2014"  "7/29/2014"  nil
+       [:after :a]  "7/28/2014 10:11"  "x"                 {:b "e*b"}
+       [:after :a]  "7/28/2014 10:11"  "7/27/2014 10:11"   {:b "e*b"}
+       [:after :a]  "7/28/2014 10:11"  "7/29/2014 10:11"   nil
 
-       [:before :a]  "7/28/2014"  "x"          {:b "e*b"}
-       [:before :a]  "7/28/2014"  "7/29/2014"  {:b "e*b"}
-       [:before :a]  "7/28/2014"  "7/27/2014"  nil
+       [:before :a]  "7/28/2014 10:11"  "x"                {:b "e*b"}
+       [:before :a]  "7/28/2014 10:11"  "7/29/2014 10:11"  {:b "e*b"}
+       [:before :a]  "7/28/2014 10:11"  "7/27/2014 10:11"  nil
 
        ))
 
 
+
+(pure/check (compilation/compile-model
+             {:x [:datetime {:default "M/dd/yyyy HH:mm"} "e*"]})
+
+            {:x "7/14/2014 10:11"}
+
+            :default)
 
 
 
@@ -343,7 +358,7 @@
   )
 
 
-(pure/parse-int "122")
+; (pure/parse-int "122")
 
 
 

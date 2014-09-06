@@ -1,9 +1,8 @@
 (ns taoclj.pure.parsers
-  (:require [clojure.string :only [trim] :as str]
-            [clj-time.format :as tf])
-  (:import [org.apache.commons.validator.routines EmailValidator]))
-
-
+  (:require [clojure.string :only [trim] :as str])
+  (:import [java.time LocalDate LocalDateTime]
+           [java.time.format DateTimeFormatter]
+           [org.apache.commons.validator.routines EmailValidator]))
 
 
 (defn parse-string
@@ -35,8 +34,9 @@
 
         :else
         (try
-          {:ok true :val (tf/parse (tf/formatter fmt) raw)}
-          (catch Exception e {:ok false :val nil}))  ))
+          {:ok true
+           :val (LocalDateTime/parse raw (DateTimeFormatter/ofPattern fmt))}
+          (catch Exception e {:ok false :val nil}))))
 
 
 (defn parse-email [raw _]

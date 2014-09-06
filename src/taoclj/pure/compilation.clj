@@ -1,6 +1,5 @@
 (ns taoclj.pure.compilation
-  (:require [clj-time.core :as t]
-            [taoclj.pure.util :refer [in?]]
+  (:require [taoclj.pure.util :refer [in?]]
             [taoclj.pure.parsers :as parsers]
             [taoclj.pure.compilation.validation :as v]))
 
@@ -77,7 +76,9 @@
           time2  (get-in values ks) ]
       (cond (nil? time1) false
             (nil? time2) false
-            :else        (t/before? time1 time2)))))
+            :else        (.isBefore time1 time2)))))
+
+
 
 (defn compile-datetime-after-condition [condition]
   (fn [values time1 _]
@@ -85,7 +86,7 @@
           time2  (get-in values ks) ]
       (cond (nil? time1) false
             (nil? time2) false
-            :else        (t/after? time1 time2)))))
+            :else        (.isAfter time1 time2)))))
 
 
 (defn compile-regex-condition [rx]
